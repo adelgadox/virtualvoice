@@ -2,7 +2,7 @@ import hashlib
 import hmac
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -24,11 +24,11 @@ def _verify_meta_signature(body: bytes, signature_header: str | None) -> bool:
 
 @router.get("/meta")
 def meta_webhook_verify(
-    hub_mode: str | None = None,
-    hub_challenge: str | None = None,
-    hub_verify_token: str | None = None,
+    hub_mode: str | None = Query(default=None, alias="hub.mode"),
+    hub_challenge: str | None = Query(default=None, alias="hub.challenge"),
+    hub_verify_token: str | None = Query(default=None, alias="hub.verify_token"),
 ):
-    """Meta webhook verification challenge."""
+    """Meta webhook verification challenge (hub.mode / hub.challenge / hub.verify_token)."""
     if hub_mode == "subscribe" and hub_verify_token == settings.meta_webhook_verify_token:
         return Response(content=hub_challenge, media_type="text/plain")
     raise HTTPException(status_code=403, detail="Verification failed")
@@ -44,5 +44,5 @@ async def meta_webhook_event(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=403, detail="Invalid signature")
 
     payload = await request.json()
-    handle_meta_webhook(payload, db)
+    await handle_meta_webhook(payload, db)
     return {"status": "ok"}

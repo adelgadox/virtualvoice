@@ -9,6 +9,7 @@ from app.dependencies import get_current_user
 from app.models.comment import Comment
 from app.models.influencer import Influencer
 from app.models.pending_response import PendingResponse
+from app.models.social_account import SocialAccount
 from app.models.user import User
 from app.schemas.response import ApproveRequest, PendingResponseOut
 
@@ -40,29 +41,52 @@ def list_history(
 
 
 @router.post("/{response_id}/approve", response_model=PendingResponseOut)
-def approve_response(
+async def approve_response(
     response_id: UUID,
     body: ApproveRequest,
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
-    resp = db.query(PendingResponse).filter(PendingResponse.id == response_id, PendingResponse.status == "pending").first()
+    resp = db.query(PendingResponse).filter(
+        PendingResponse.id == response_id,
+        PendingResponse.status == "pending",
+    ).first()
     if not resp:
         raise HTTPException(status_code=404, detail="Pending response not found")
 
+    final_text = body.final_text or resp.suggested_text
     new_status = "edited" if body.final_text and body.final_text != resp.suggested_text else "approved"
-    updated = PendingResponse(
-        **{c.key: getattr(resp, c.key) for c in resp.__table__.columns},
-        status=new_status,
-        final_text=body.final_text or resp.suggested_text,
-        approved_by=body.approved_by,
-        approved_at=datetime.now(timezone.utc),
-    )
-    # Immutable update: expire old row, add new state
+
+    # Publish to Meta when the social account has a token
+    platform_reply_id: str | None = None
+    published_at: datetime | None = None
+
+    comment = db.query(Comment).filter(Comment.id == resp.comment_id).first()
+    if comment:
+        social_account = db.query(SocialAccount).filter(
+            SocialAccount.id == comment.social_account_id
+        ).first()
+        if social_account and social_account.access_token:
+            from app.core.meta.graph_api import publish_reply
+            try:
+                platform_reply_id = await publish_reply(
+                    comment_id=comment.platform_comment_id,
+                    message=final_text,
+                    access_token=social_account.access_token,
+                )
+                published_at = datetime.now(timezone.utc)
+            except Exception as exc:
+                raise HTTPException(
+                    status_code=502,
+                    detail=f"Failed to publish reply to Meta: {exc}",
+                ) from exc
+
     resp.status = new_status
-    resp.final_text = body.final_text or resp.suggested_text
+    resp.final_text = final_text
     resp.approved_by = body.approved_by
     resp.approved_at = datetime.now(timezone.utc)
+    resp.platform_reply_id = platform_reply_id
+    resp.published_at = published_at
     db.commit()
     db.refresh(resp)
     return resp
@@ -74,7 +98,10 @@ def ignore_response(
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
-    resp = db.query(PendingResponse).filter(PendingResponse.id == response_id, PendingResponse.status == "pending").first()
+    resp = db.query(PendingResponse).filter(
+        PendingResponse.id == response_id,
+        PendingResponse.status == "pending",
+    ).first()
     if not resp:
         raise HTTPException(status_code=404, detail="Pending response not found")
     resp.status = "ignored"
@@ -84,12 +111,15 @@ def ignore_response(
 
 
 @router.post("/{response_id}/regenerate", response_model=PendingResponseOut)
-def regenerate_response(
+async def regenerate_response(
     response_id: UUID,
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
-    resp = db.query(PendingResponse).filter(PendingResponse.id == response_id, PendingResponse.status == "pending").first()
+    resp = db.query(PendingResponse).filter(
+        PendingResponse.id == response_id,
+        PendingResponse.status == "pending",
+    ).first()
     if not resp:
         raise HTTPException(status_code=404, detail="Pending response not found")
 
@@ -100,9 +130,7 @@ def regenerate_response(
 
     from app.core.personality.engine import PersonalityEngine
     engine = PersonalityEngine(db)
-    new_text = engine.generate(influencer=influencer, comment=comment)
-
-    resp.suggested_text = new_text
+    resp.suggested_text = await engine.generate(influencer=influencer, comment=comment)
     db.commit()
     db.refresh(resp)
     return resp
