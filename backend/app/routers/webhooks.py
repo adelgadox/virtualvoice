@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.database import get_db
 from app.core.meta.webhook_handler import handle_meta_webhook
+from app.utils.rate_limit import limiter
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/webhooks", tags=["webhooks"])
@@ -23,7 +24,9 @@ def _verify_meta_signature(body: bytes, signature_header: str | None) -> bool:
 
 
 @router.get("/meta")
+@limiter.limit("20/minute")
 def meta_webhook_verify(
+    request: Request,
     hub_mode: str | None = Query(default=None, alias="hub.mode"),
     hub_challenge: str | None = Query(default=None, alias="hub.challenge"),
     hub_verify_token: str | None = Query(default=None, alias="hub.verify_token"),
@@ -35,6 +38,7 @@ def meta_webhook_verify(
 
 
 @router.post("/meta")
+@limiter.limit("300/minute")
 async def meta_webhook_event(request: Request, db: Session = Depends(get_db)):
     body = await request.body()
     signature = request.headers.get("X-Hub-Signature-256")
