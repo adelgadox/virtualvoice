@@ -1,232 +1,229 @@
-# ROADMAP — VirtualVoice
+# VirtualVoice Roadmap
 
-Development phases and current project status.
-
-**Legend:** ✅ Complete · 🔧 In Progress · ⬜ Pending
-
----
-
-## Phase 0 — Base Infrastructure
-> Initial project setup, folder structure, and environment configuration.
-
-| Task | Status | Notes |
-|------|--------|-------|
-| Monorepo structure `backend/` + `frontend/` | ✅ | |
-| Backend `Dockerfile` | ✅ | Multi-stage, Python 3.12-slim |
-| `docker-compose.yml` local | ✅ | db:5433, backend:8001, frontend:3000 |
-| `requirements.txt` | ✅ | FastAPI, SQLAlchemy, Alembic, pgvector, etc. |
-| Environment variables (`.env.example`) | ✅ | |
-| Pydantic Settings config (`config.py`) | ✅ | |
-| Alembic setup + initial migration | ✅ | Tables created in local DB |
-| `main.py` with CORS, rate limit, routers | ✅ | |
+> **Complexity:** 🟢 Low · 🟡 Medium · 🔴 High
+> **Status:** ✅ Done · 🔧 In Progress · ⬜ Pending
 
 ---
 
-## Phase 1 — Backend Core (MVP)
-> Minimum viable functionality: receive comments, generate response, approve and publish.
+### Phase 0 — Base Infrastructure ✅
 
-### 1.1 Models & Schemas
-
-| Task | Status | Notes |
-|------|--------|-------|
-| `User` model | ✅ | google_id, avatar_url, auth_provider |
-| `Influencer` model | ✅ | |
-| `SocialAccount` model | ✅ | |
-| `Comment` model | ✅ | |
-| `PendingResponse` model | ✅ | |
-| `KnowledgeEntry` model | ✅ | |
-| Pydantic schemas (influencer, response, knowledge, auth) | ✅ | |
-| pgvector migration — `embedding` column in `knowledge_entries` | ⬜ | Requires `CREATE EXTENSION vector` |
-
-### 1.2 Authentication
-
-| Task | Status | Notes |
-|------|--------|-------|
-| Email/password login (`POST /auth/login`) | ✅ | JWT implemented |
-| Authentication middleware (`get_current_user`) | ✅ | |
-| Password hashing with bcrypt | ✅ | |
-| User registration (`POST /auth/register`) | ✅ | |
-| Google SSO backend endpoint (`POST /auth/google`) | ✅ | Verifies Google token, creates/finds user |
-| User model — Google fields (`google_id`, `avatar_url`, `auth_provider`) | ✅ | `hashed_password` is nullable |
-| Migration for new user fields | ✅ | Applied |
-
-### 1.3 LLM Provider Layer
-
-| Task | Status | Notes |
-|------|--------|-------|
-| Abstract interface `LLMProvider` (`base.py`) | ✅ | |
-| `GeminiProvider` | ✅ | Native SDK, `generate_content_async` |
-| `AnthropicProvider` | ✅ | Native SDK, `AsyncAnthropic` |
-| `OpenAICompatibleProvider` | ✅ | Generic adapter: OpenAI, DeepSeek, Qwen, Perplexity, Groq, Mistral, Ollama, any custom endpoint |
-| `get_provider()` factory — selection by config | ✅ | `LLM_PROVIDER` env var; zero code changes to add new providers |
-
-### 1.4 Personality Engine
-
-| Task | Status | Notes |
-|------|--------|-------|
-| `PromptBuilder` — build system prompt from influencer | ✅ | Injects personality + knowledge fragments + post context |
-| `PersonalityEngine` — orchestrate prompt + LLM | ✅ | `async generate()`, uses influencer's `llm_provider` |
-| Basic RAG (without pgvector, static knowledge base) | ✅ | Fallback to recency order when pgvector unavailable |
-| Unit tests — Personality Engine + PromptBuilder + RAG | ✅ | 12 tests passing |
-
-### 1.5 Meta Integration
-
-| Task | Status | Notes |
-|------|--------|-------|
-| Webhook verification (`GET /webhooks/meta`) | 🔧 | Router created |
-| Comment reception (`POST /webhooks/meta`) | 🔧 | |
-| Signature verification `X-Hub-Signature-256` | ⬜ | |
-| Publish approved response (`graph_api.py`) | 🔧 | |
-| `token_manager.py` — Page Access Token management | ⬜ | |
-
-### 1.6 REST API — Endpoints
-
-| Task | Status | Notes |
-|------|--------|-------|
-| `GET /influencers` — list influencers | 🔧 | Router created |
-| `POST /influencers` — create influencer | 🔧 | |
-| `GET /responses` — pending response queue | 🔧 | |
-| `PATCH /responses/{id}/approve` — approve response | 🔧 | |
-| `PATCH /responses/{id}/reject` — reject/ignore | 🔧 | |
-| `POST /responses/{id}/regenerate` — regenerate with LLM | ⬜ | |
-| `GET /knowledge` — list knowledge base entries | 🔧 | |
-| `POST /knowledge` — add entry | 🔧 | |
-| `DELETE /knowledge/{id}` — delete entry | ⬜ | |
-
-### 1.7 Backend Tests
-
-| Task | Status | Notes |
-|------|--------|-------|
-| pytest + pytest-asyncio setup | ✅ | `pytest.ini` with `asyncio_mode=auto`, `conftest.py` with SDK mocks |
-| Unit tests — LLM providers (mock) | ✅ | 13 tests: Gemini, Anthropic, OpenAICompatible, factory |
-| Unit tests — Personality Engine | ✅ | Covered in test_personality.py |
-| Integration tests — auth endpoints | ⬜ | |
-| Integration tests — responses endpoints | ⬜ | |
-| Integration tests — webhook handler | ⬜ | |
-| Minimum 80% coverage | ⬜ | |
+| # | Task | Description | Complexity | Status |
+|---|------|-------------|------------|--------|
+| 1 | Monorepo structure | `backend/` + `frontend/` with independent deployments | 🟢 | ✅ Done |
+| 2 | Backend Dockerfile | Multi-stage build, Python 3.12-slim | 🟢 | ✅ Done |
+| 3 | Docker Compose | Local env: db:5433, backend:8001, frontend:3000 | 🟢 | ✅ Done |
+| 4 | Python dependencies | FastAPI, SQLAlchemy, Alembic, pgvector, Pydantic v2 | 🟢 | ✅ Done |
+| 5 | Pydantic Settings | `config.py` with environment variable management | 🟢 | ✅ Done |
+| 6 | Alembic + initial migration | Tables created, migrations workflow established | 🟡 | ✅ Done |
+| 7 | FastAPI entry point | CORS, rate limiting, router registration in `main.py` | 🟢 | ✅ Done |
+| 8 | Environment variables | `.env.example` for backend and frontend | 🟢 | ✅ Done |
 
 ---
 
-## Phase 2 — Frontend (Approval Panel)
-> Internal Next.js interface to manage the response queue.
+### Phase 1 — Backend Core (MVP) 🔧
 
-### 2.1 Setup
+> Minimum viable functionality: receive comments, generate a response via LLM, approve and publish.
 
-| Task | Status | Notes |
-|------|--------|-------|
-| Next.js 15 + TypeScript + Tailwind | ✅ | |
-| next-auth v5 installed | ✅ | |
-| HTTP client to backend (`lib/api.ts`) | ✅ | |
-| Auth group layout with gradient background | ✅ | |
-| Login page (email/pass + Google SSO) | ✅ | `/login` |
-| Register page (email/pass + Google SSO) | ✅ | `/register` |
-| NextAuth config — Credentials + Google providers | ✅ | |
-| Route protection — redirect to `/login` if not authenticated | ✅ | |
-| Dashboard layout with sidebar (desktop + mobile bottom nav) | ✅ | |
+#### 1.1 — Models & Schemas ✅
 
-### 2.2 Approval Queue
+| # | Task | Description | Complexity | Status |
+|---|------|-------------|------------|--------|
+| 1 | `User` model | `google_id`, `avatar_url`, `auth_provider`; nullable `hashed_password` | 🟢 | ✅ Done |
+| 2 | `Influencer` model | Name, slug, `system_prompt_core`, `llm_provider` override | 🟢 | ✅ Done |
+| 3 | `SocialAccount` model | Connected social accounts per influencer | 🟢 | ✅ Done |
+| 4 | `Comment` model | Platform comment ID, author, content, post context | 🟢 | ✅ Done |
+| 5 | `PendingResponse` model | Generated response with approval status | 🟢 | ✅ Done |
+| 6 | `KnowledgeEntry` model | Per-influencer knowledge base with pgvector embedding column | 🟡 | ✅ Done |
+| 7 | Pydantic schemas | Auth, influencer, response, knowledge entry schemas | 🟢 | ✅ Done |
+| 8 | pgvector migration | `CREATE EXTENSION vector` + `embedding` column on `knowledge_entries` | 🟡 | ⬜ Pending |
 
-| Task | Status | Notes |
-|------|--------|-------|
-| `/dashboard/queue` — pending response list | ⬜ | |
-| `ApprovalCard` component — comment + response + actions | ⬜ | |
-| Approve action | ⬜ | |
-| Inline edit action | ⬜ | |
-| Regenerate action | ⬜ | |
-| Ignore action | ⬜ | |
-| Filter by influencer | ⬜ | |
-| Polling or WebSocket for real-time updates | ⬜ | |
+#### 1.2 — Authentication ✅
 
-### 2.3 Influencer Management
+| # | Task | Description | Complexity | Status |
+|---|------|-------------|------------|--------|
+| 1 | `POST /auth/register` | Email/password registration with bcrypt hashing | 🟢 | ✅ Done |
+| 2 | `POST /auth/login` | JWT generation on valid credentials | 🟢 | ✅ Done |
+| 3 | `POST /auth/google` | Verify Google token, create or sync user | 🟡 | ✅ Done |
+| 4 | `GET /auth/me` | Return current authenticated user | 🟢 | ✅ Done |
+| 5 | `get_current_user` middleware | JWT validation dependency for protected routes | 🟢 | ✅ Done |
+| 6 | Google SSO fields on User | `google_id`, `avatar_url`, `auth_provider` + migration | 🟢 | ✅ Done |
 
-| Task | Status | Notes |
-|------|--------|-------|
-| `/dashboard/influencers` — influencer list | ⬜ | |
-| Create/edit influencer form | ⬜ | |
-| System prompt editor | ⬜ | |
+#### 1.3 — LLM Provider Layer ✅
 
-### 2.4 Knowledge Base Editor
+| # | Task | Description | Complexity | Status |
+|---|------|-------------|------------|--------|
+| 1 | Abstract `LLMProvider` interface | `async generate(system_prompt, user_message) -> str` | 🟢 | ✅ Done |
+| 2 | `GeminiProvider` | Google Gemini via native SDK (`generate_content_async`) | 🟡 | ✅ Done |
+| 3 | `AnthropicProvider` | Anthropic Claude via native SDK (`AsyncAnthropic`) | 🟡 | ✅ Done |
+| 4 | `OpenAICompatibleProvider` | Generic adapter: OpenAI, DeepSeek, Qwen, Perplexity, Groq, Mistral, Ollama, any custom endpoint | 🟡 | ✅ Done |
+| 5 | `get_provider()` factory | Resolves provider from `LLM_PROVIDER` env var; zero code changes to add new providers | 🟢 | ✅ Done |
+| 6 | Unit tests — LLM providers | 13 tests: Gemini, Anthropic, OpenAICompatible ×4, factory ×3 | 🟡 | ✅ Done |
 
-| Task | Status | Notes |
-|------|--------|-------|
-| `/dashboard/knowledge` — entries by influencer | ⬜ | |
-| Add / edit / delete entries | ⬜ | |
-| Categories: biography, opinions, voice_examples, off_limits, etc. | ⬜ | |
+> Adding a new provider requires only env vars — no code changes:
+> ```env
+> LLM_PROVIDER=deepseek
+> DEEPSEEK_API_KEY=sk-...
+> DEEPSEEK_MODEL=deepseek-chat    # optional
+> DEEPSEEK_BASE_URL=https://...   # optional
+> ```
 
-### 2.5 Frontend Tests
+#### 1.4 — Personality Engine ✅
 
-| Task | Status | Notes |
-|------|--------|-------|
-| Unit tests — main components | ⬜ | |
-| E2E tests — approve response flow | ⬜ | |
-| E2E tests — login and protected access | ⬜ | |
+| # | Task | Description | Complexity | Status |
+|---|------|-------------|------------|--------|
+| 1 | `PromptBuilder` | Assembles final prompt: system prompt + RAG fragments + post context + comment | 🟡 | ✅ Done |
+| 2 | `PersonalityEngine` | Async orchestration: `build_prompt` → `get_provider` → `generate` | 🟡 | ✅ Done |
+| 3 | RAG fallback | Recency-order fallback when pgvector is unavailable | 🟢 | ✅ Done |
+| 4 | Unit tests — Personality Engine | 12 tests: PromptBuilder ×6, PersonalityEngine ×4, RAG ×2 | 🟡 | ✅ Done |
 
----
+#### 1.5 — Meta Integration 🔧
 
-## Phase 3 — RAG + Multi-influencer
-> Real intelligence: embeddings, semantic search, and multi-account support.
+| # | Task | Description | Complexity | Status |
+|---|------|-------------|------------|--------|
+| 1 | Webhook verification (`GET /webhooks/meta`) | Token challenge handshake with Meta | 🟢 | 🔧 In Progress |
+| 2 | Comment reception (`POST /webhooks/meta`) | Parse comment payload and trigger Personality Engine | 🟡 | 🔧 In Progress |
+| 3 | Signature verification | `X-Hub-Signature-256` HMAC validation on every request | 🟡 | ⬜ Pending |
+| 4 | Publish approved response | `POST /{comment-id}/replies` via Meta Graph API | 🟡 | 🔧 In Progress |
+| 5 | Page Access Token manager | `token_manager.py` — store and refresh Page Access Tokens | 🔴 | ⬜ Pending |
 
-| Task | Status | Notes |
-|------|--------|-------|
-| Enable `pgvector` extension on Railway | ⬜ | `CREATE EXTENSION vector;` |
-| Generate embeddings when saving knowledge entries | ⬜ | Use Gemini embeddings API |
-| Implement RAG search in `rag.py` | ⬜ | `k` most relevant fragments by cosine similarity |
-| Integrate RAG into Personality Engine | ⬜ | |
-| Feedback loop: approved responses → voice_examples automatically | ⬜ | |
-| Full multi-influencer support (filters, selection in webhook) | ⬜ | |
+#### 1.6 — REST API Endpoints 🔧
 
----
+| # | Task | Description | Complexity | Status |
+|---|------|-------------|------------|--------|
+| 1 | `GET /influencers` | List all influencers for the authenticated user | 🟢 | 🔧 In Progress |
+| 2 | `POST /influencers` | Create influencer with personality profile | 🟢 | 🔧 In Progress |
+| 3 | `PATCH /influencers/{id}` | Update influencer name, prompt, LLM provider | 🟢 | ⬜ Pending |
+| 4 | `GET /responses` | Paginated pending response queue | 🟢 | 🔧 In Progress |
+| 5 | `PATCH /responses/{id}/approve` | Approve response and publish to Meta | 🟡 | 🔧 In Progress |
+| 6 | `PATCH /responses/{id}/reject` | Reject/ignore a pending response | 🟢 | 🔧 In Progress |
+| 7 | `POST /responses/{id}/regenerate` | Trigger new LLM generation with same context | 🟡 | ⬜ Pending |
+| 8 | `GET /knowledge` | List knowledge base entries by influencer | 🟢 | 🔧 In Progress |
+| 9 | `POST /knowledge` | Add a new knowledge entry | 🟢 | 🔧 In Progress |
+| 10 | `DELETE /knowledge/{id}` | Soft-delete a knowledge entry | 🟢 | ⬜ Pending |
 
-## Phase 4 — Quality & Intelligence
-> Metrics, notifications, and dynamic situational context.
+#### 1.7 — Backend Tests 🔧
 
-| Task | Status | Notes |
-|------|--------|-------|
-| Dynamic situational context (mood, recent posts) | ⬜ | |
-| Metrics dashboard: approval rate, edit rate, rejection rate | ⬜ | |
-| Slack notifications for new comments | ⬜ | |
-| Automatic Meta Page Access Token renewal | ⬜ | |
-| Threads support (pending Meta API opening) | ⬜ | |
-
----
-
-## Phase 4.5 — Platform Expansion
-> Integrate networks beyond Meta. Each platform is a new adapter in `core/platforms/`.
-
-| Task | Status | Notes |
-|------|--------|-------|
-| Twitter/X — read mentions and replies via API v2 | ⬜ | Requires Twitter Developer App |
-| Twitter/X — publish approved response | ⬜ | |
-| TikTok — read comments via TikTok API | ⬜ | TikTok for Developers |
-| TikTok — publish approved response | ⬜ | |
-| OnlyFans — research available API | ⬜ | Official API limited |
-| Frontend panel — platform selector in filters | ⬜ | |
+| # | Task | Description | Complexity | Status |
+|---|------|-------------|------------|--------|
+| 1 | pytest + pytest-asyncio setup | `pytest.ini` with `asyncio_mode=auto`; `conftest.py` with SDK mocks | 🟢 | ✅ Done |
+| 2 | Unit tests — LLM providers | 13 tests (Gemini, Anthropic, OpenAICompatible, factory) | 🟡 | ✅ Done |
+| 3 | Unit tests — Personality Engine | 12 tests (PromptBuilder, PersonalityEngine, RAG) | 🟡 | ✅ Done |
+| 4 | Integration tests — auth endpoints | Register, login, Google SSO, protected route | 🟡 | ⬜ Pending |
+| 5 | Integration tests — responses endpoints | Queue, approve, reject, regenerate | 🟡 | ⬜ Pending |
+| 6 | Integration tests — webhook handler | Signature verification, comment processing | 🔴 | ⬜ Pending |
+| 7 | Minimum 80% coverage | Enforce with `pytest --cov` in CI | 🟡 | ⬜ Pending |
 
 ---
 
-## Phase 5 — Production
-> Deployment, security, and monitoring.
+### Phase 2 — Frontend (Approval Panel) 🔧
 
-| Task | Status | Notes |
-|------|--------|-------|
-| Deploy backend on Railway | ⬜ | |
-| Provision PostgreSQL on Railway + enable pgvector | ⬜ | |
-| Deploy frontend on Vercel | ⬜ | |
-| Configure webhooks in Meta Developer Console | ⬜ | |
-| Production environment variables | ⬜ | |
-| CI/CD — GitHub Actions (tests on every PR) | ⬜ | |
-| Error monitoring (Sentry or Railway logs) | ⬜ | |
+> Internal Next.js interface to manage the response queue and configure influencers.
+
+#### 2.1 — Setup ✅
+
+| # | Task | Description | Complexity | Status |
+|---|------|-------------|------------|--------|
+| 1 | Next.js 15 + TypeScript + Tailwind v4 | App Router, ESM PostCSS config | 🟢 | ✅ Done |
+| 2 | NextAuth v5 | Credentials + Google providers, JWT strategy | 🟡 | ✅ Done |
+| 3 | Auth layout | Purple gradient background, white card, `(auth)/` route group | 🟢 | ✅ Done |
+| 4 | Login page | Email/password + Google SSO button | 🟢 | ✅ Done |
+| 5 | Register page | Email/password + Google SSO button | 🟢 | ✅ Done |
+| 6 | Route protection | Redirect to `/login` if no valid session | 🟢 | ✅ Done |
+| 7 | Dashboard layout | Sidebar (desktop) + bottom nav (mobile) | 🟡 | ✅ Done |
+| 8 | HTTP client | `lib/api.ts` with auth token injection | 🟢 | ✅ Done |
+
+#### 2.2 — Approval Queue ⬜
+
+| # | Task | Description | Complexity | Status |
+|---|------|-------------|------------|--------|
+| 1 | `/dashboard/queue` | Pending response list page | 🟡 | ⬜ Pending |
+| 2 | `ApprovalCard` component | Original comment + suggested response + action buttons | 🟡 | ⬜ Pending |
+| 3 | Approve action | One-click publish to Meta | 🟢 | ⬜ Pending |
+| 4 | Inline edit action | Edit response text before publishing | 🟢 | ⬜ Pending |
+| 5 | Regenerate action | Request new LLM response | 🟢 | ⬜ Pending |
+| 6 | Ignore action | Archive without publishing | 🟢 | ⬜ Pending |
+| 7 | Filter by influencer | Dropdown to scope queue to one influencer | 🟢 | ⬜ Pending |
+| 8 | Real-time updates | Polling or WebSocket for new comments | 🔴 | ⬜ Pending |
+
+#### 2.3 — Influencer Management ⬜
+
+| # | Task | Description | Complexity | Status |
+|---|------|-------------|------------|--------|
+| 1 | `/dashboard/influencers` | Influencer list with status badges | 🟢 | ⬜ Pending |
+| 2 | Create / edit form | Name, slug, LLM provider selector | 🟡 | ⬜ Pending |
+| 3 | System prompt editor | Textarea with character count and preview | 🟡 | ⬜ Pending |
+
+#### 2.4 — Knowledge Base Editor ⬜
+
+| # | Task | Description | Complexity | Status |
+|---|------|-------------|------------|--------|
+| 1 | `/dashboard/knowledge` | Entries grouped by influencer | 🟡 | ⬜ Pending |
+| 2 | Add / edit / delete entries | CRUD UI for knowledge entries | 🟢 | ⬜ Pending |
+| 3 | Category tags | biography, opinions, voice_examples, off_limits, etc. | 🟢 | ⬜ Pending |
+
+#### 2.5 — Frontend Tests ⬜
+
+| # | Task | Description | Complexity | Status |
+|---|------|-------------|------------|--------|
+| 1 | Unit tests — components | ApprovalCard, Sidebar, auth pages | 🟡 | ⬜ Pending |
+| 2 | E2E — login flow | Login with credentials + Google SSO | 🟡 | ⬜ Pending |
+| 3 | E2E — approve response flow | Full cycle: queue → approve → confirm published | 🔴 | ⬜ Pending |
 
 ---
 
-## Suggested Work Order
+### Phase 3 — RAG + Multi-influencer ⬜
 
-```
-Phase 1.3 (LLM) → Phase 1.4 (Personality Engine) → Phase 1.5 (Meta)
-→ Phase 1.6 (API endpoints) → Phase 1.7 (Tests)
-→ Phase 2.2 (Approval Queue) → Phase 2.3 (Influencers) → Phase 2.4 (Knowledge)
-→ Phase 3 (RAG) → Phase 4 → Phase 5
-```
+> Real intelligence: semantic embeddings, vector search, and full multi-account support.
+
+| # | Task | Description | Complexity | Status |
+|---|------|-------------|------------|--------|
+| 1 | Enable pgvector on Railway | `CREATE EXTENSION vector;` on production DB | 🟢 | ⬜ Pending |
+| 2 | Embedding generation | Generate and store embeddings when saving knowledge entries (Gemini embeddings API) | 🟡 | ⬜ Pending |
+| 3 | RAG search (`rag.py`) | Cosine similarity over `knowledge_entries.embedding` — top-k fragments | 🟡 | ⬜ Pending |
+| 4 | RAG integration | Inject retrieved fragments into Personality Engine prompt | 🟢 | ⬜ Pending |
+| 5 | Feedback loop | Approved/edited responses saved as `voice_examples` to improve future prompts | 🟡 | ⬜ Pending |
+| 6 | Full multi-influencer | Webhook routing by social account → influencer; per-influencer filters in UI | 🟡 | ⬜ Pending |
+
+---
+
+### Phase 4 — Quality & Intelligence ⬜
+
+| # | Task | Description | Complexity | Status |
+|---|------|-------------|------------|--------|
+| 1 | Dynamic situational context | Inject current mood, recent posts, trends into prompt | 🔴 | ⬜ Pending |
+| 2 | Metrics dashboard | Approval rate, edit rate, rejection rate per influencer | 🟡 | ⬜ Pending |
+| 3 | Slack notifications | Alert team on new pending comments | 🟡 | ⬜ Pending |
+| 4 | Automatic token renewal | Auto-refresh Meta Page Access Tokens before expiry | 🔴 | ⬜ Pending |
+| 5 | Threads support | Extend Meta integration to Threads (pending Meta API availability) | 🔴 | ⬜ Pending |
+
+---
+
+### Phase 4.5 — Platform Expansion ⬜
+
+> Each platform is a new adapter under `core/platforms/`. No changes to the Personality Engine.
+
+| # | Task | Description | Complexity | Status |
+|---|------|-------------|------------|--------|
+| 1 | Twitter/X — read mentions | Read mentions and replies via Twitter API v2 | 🔴 | ⬜ Pending |
+| 2 | Twitter/X — publish response | Publish approved reply via Twitter API v2 | 🔴 | ⬜ Pending |
+| 3 | TikTok — read comments | Read comments via TikTok for Developers API | 🔴 | ⬜ Pending |
+| 4 | TikTok — publish response | Publish approved comment reply | 🔴 | ⬜ Pending |
+| 5 | OnlyFans | Research available API; official API is limited | 🔴 | ⬜ Pending |
+| 6 | Frontend — platform selector | Filter approval queue by platform | 🟢 | ⬜ Pending |
+
+---
+
+### Phase 5 — Production ⬜
+
+| # | Task | Description | Complexity | Status |
+|---|------|-------------|------------|--------|
+| 1 | Deploy backend on Railway | FastAPI service + environment variables | 🟡 | ⬜ Pending |
+| 2 | PostgreSQL on Railway | Provision DB + enable pgvector extension | 🟢 | ⬜ Pending |
+| 3 | Deploy frontend on Vercel | Next.js app with `NEXT_PUBLIC_API_URL` pointing to Railway | 🟢 | ⬜ Pending |
+| 4 | Configure Meta webhooks | Register callback URL in Meta Developer Console | 🟡 | ⬜ Pending |
+| 5 | Production environment variables | All secrets configured in Railway and Vercel | 🟢 | ⬜ Pending |
+| 6 | CI/CD — GitHub Actions | Run tests on every PR; block merge on failure | 🟡 | ⬜ Pending |
+| 7 | Error monitoring | Sentry or Railway native logs + alerting | 🟡 | ⬜ Pending |
 
 ---
 
