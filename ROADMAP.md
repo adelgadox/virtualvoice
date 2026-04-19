@@ -64,9 +64,10 @@ Development phases and current project status.
 
 | Task | Status | Notes |
 |------|--------|-------|
-| `PromptBuilder` — build system prompt from influencer | 🔧 | File created |
-| `PersonalityEngine` — orchestrate prompt + LLM | 🔧 | |
-| Basic RAG (without pgvector, static knowledge base) | ⬜ | For MVP without embeddings |
+| `PromptBuilder` — build system prompt from influencer | ✅ | Injects personality + knowledge fragments + post context |
+| `PersonalityEngine` — orchestrate prompt + LLM | ✅ | `async generate()`, uses influencer's `llm_provider` |
+| Basic RAG (without pgvector, static knowledge base) | ✅ | Fallback to recency order when pgvector unavailable |
+| Unit tests — Personality Engine + PromptBuilder + RAG | ✅ | 12 tests passing |
 
 ### 1.5 Meta Integration
 
@@ -98,7 +99,7 @@ Development phases and current project status.
 |------|--------|-------|
 | pytest + pytest-asyncio setup | ✅ | `pytest.ini` with `asyncio_mode=auto`, `conftest.py` with SDK mocks |
 | Unit tests — LLM providers (mock) | ✅ | 13 tests: Gemini, Anthropic, OpenAICompatible, factory |
-| Unit tests — Personality Engine | ⬜ | |
+| Unit tests — Personality Engine | ✅ | Covered in test_personality.py |
 | Integration tests — auth endpoints | ⬜ | |
 | Integration tests — responses endpoints | ⬜ | |
 | Integration tests — webhook handler | ⬜ | |
@@ -229,4 +230,4 @@ Phase 1.3 (LLM) → Phase 1.4 (Personality Engine) → Phase 1.5 (Meta)
 
 ---
 
-*Last updated: 2026-04-20*
+*Last updated: 2026-04-20 (Phase 1.3 + 1.4 complete)*
