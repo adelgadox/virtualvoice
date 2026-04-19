@@ -9,7 +9,7 @@ from app.core.personality.engine import PersonalityEngine
 logger = logging.getLogger(__name__)
 
 
-def handle_meta_webhook(payload: dict, db: Session) -> None:
+async def handle_meta_webhook(payload: dict, db: Session) -> None:
     """Process an incoming Meta webhook event."""
     object_type = payload.get("object")
     entries = payload.get("entry", [])
@@ -20,10 +20,10 @@ def handle_meta_webhook(payload: dict, db: Session) -> None:
             field = change.get("field")
 
             if field == "comments":
-                _handle_comment(value, object_type, db)
+                await _handle_comment(value, object_type, db)
 
 
-def _handle_comment(value: dict, object_type: str | None, db: Session) -> None:
+async def _handle_comment(value: dict, object_type: str | None, db: Session) -> None:
     platform_comment_id = value.get("id")
     if not platform_comment_id:
         return
@@ -54,7 +54,6 @@ def _handle_comment(value: dict, object_type: str | None, db: Session) -> None:
     db.add(comment)
     db.flush()
 
-    engine = PersonalityEngine(db)
     from app.models.influencer import Influencer
     influencer = db.query(Influencer).filter(Influencer.id == social_account.influencer_id).first()
     if not influencer:
@@ -62,8 +61,9 @@ def _handle_comment(value: dict, object_type: str | None, db: Session) -> None:
         db.rollback()
         return
 
+    engine = PersonalityEngine(db)
     try:
-        suggested_text = engine.generate(influencer=influencer, comment=comment)
+        suggested_text = await engine.generate(influencer=influencer, comment=comment)
     except Exception:
         logger.exception("Failed to generate response for comment %s", platform_comment_id)
         db.rollback()

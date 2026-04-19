@@ -76,30 +76,32 @@
 | 3 | RAG fallback | Recency-order fallback when pgvector is unavailable | 🟢 | ✅ Done |
 | 4 | Unit tests — Personality Engine | 12 tests: PromptBuilder ×6, PersonalityEngine ×4, RAG ×2 | 🟡 | ✅ Done |
 
-#### 1.5 — Meta Integration 🔧
+#### 1.5 — Meta Integration ✅
 
 | # | Task | Description | Complexity | Status |
 |---|------|-------------|------------|--------|
-| 1 | Webhook verification (`GET /webhooks/meta`) | Token challenge handshake with Meta | 🟢 | 🔧 In Progress |
-| 2 | Comment reception (`POST /webhooks/meta`) | Parse comment payload and trigger Personality Engine | 🟡 | 🔧 In Progress |
-| 3 | Signature verification | `X-Hub-Signature-256` HMAC validation on every request | 🟡 | ⬜ Pending |
-| 4 | Publish approved response | `POST /{comment-id}/replies` via Meta Graph API | 🟡 | 🔧 In Progress |
+| 1 | Webhook verification (`GET /webhooks/meta`) | Token challenge handshake; `hub.mode/challenge/verify_token` aliases | 🟢 | ✅ Done |
+| 2 | Comment reception (`POST /webhooks/meta`) | Parse comment payload and trigger Personality Engine | 🟡 | ✅ Done |
+| 3 | Signature verification | `X-Hub-Signature-256` HMAC validation on every request | 🟡 | ✅ Done |
+| 4 | Publish approved response | `POST /{comment-id}/replies` via Meta Graph API (async httpx) | 🟡 | ✅ Done |
 | 5 | Page Access Token manager | `token_manager.py` — store and refresh Page Access Tokens | 🔴 | ⬜ Pending |
 
-#### 1.6 — REST API Endpoints 🔧
+#### 1.6 — REST API Endpoints ✅
 
 | # | Task | Description | Complexity | Status |
 |---|------|-------------|------------|--------|
-| 1 | `GET /influencers` | List all influencers for the authenticated user | 🟢 | 🔧 In Progress |
-| 2 | `POST /influencers` | Create influencer with personality profile | 🟢 | 🔧 In Progress |
-| 3 | `PATCH /influencers/{id}` | Update influencer name, prompt, LLM provider | 🟢 | ⬜ Pending |
-| 4 | `GET /responses` | Paginated pending response queue | 🟢 | 🔧 In Progress |
-| 5 | `PATCH /responses/{id}/approve` | Approve response and publish to Meta | 🟡 | 🔧 In Progress |
-| 6 | `PATCH /responses/{id}/reject` | Reject/ignore a pending response | 🟢 | 🔧 In Progress |
-| 7 | `POST /responses/{id}/regenerate` | Trigger new LLM generation with same context | 🟡 | ⬜ Pending |
-| 8 | `GET /knowledge` | List knowledge base entries by influencer | 🟢 | 🔧 In Progress |
-| 9 | `POST /knowledge` | Add a new knowledge entry | 🟢 | 🔧 In Progress |
-| 10 | `DELETE /knowledge/{id}` | Soft-delete a knowledge entry | 🟢 | ⬜ Pending |
+| 1 | `GET /influencers` | List all influencers | 🟢 | ✅ Done |
+| 2 | `POST /influencers` | Create influencer with personality profile | 🟢 | ✅ Done |
+| 3 | `PATCH /influencers/{id}` | Update influencer name, prompt, LLM provider | 🟢 | ✅ Done |
+| 4 | `GET /responses/pending` | Paginated pending response queue | 🟢 | ✅ Done |
+| 5 | `GET /responses/history` | Resolved responses history | 🟢 | ✅ Done |
+| 6 | `POST /responses/{id}/approve` | Approve + publish to Meta; async with token lookup | 🟡 | ✅ Done |
+| 7 | `POST /responses/{id}/ignore` | Ignore a pending response | 🟢 | ✅ Done |
+| 8 | `POST /responses/{id}/regenerate` | Trigger new LLM generation with same context | 🟡 | ✅ Done |
+| 9 | `GET /knowledge` | List knowledge base entries by influencer | 🟢 | ✅ Done |
+| 10 | `POST /knowledge` | Add a new knowledge entry | 🟢 | ✅ Done |
+| 11 | `PATCH /knowledge/{id}` | Update knowledge entry | 🟢 | ✅ Done |
+| 12 | `DELETE /knowledge/{id}` | Soft-delete a knowledge entry | 🟢 | ✅ Done |
 
 #### 1.7 — Backend Tests 🔧
 
@@ -108,10 +110,9 @@
 | 1 | pytest + pytest-asyncio setup | `pytest.ini` with `asyncio_mode=auto`; `conftest.py` with SDK mocks | 🟢 | ✅ Done |
 | 2 | Unit tests — LLM providers | 13 tests (Gemini, Anthropic, OpenAICompatible, factory) | 🟡 | ✅ Done |
 | 3 | Unit tests — Personality Engine | 12 tests (PromptBuilder, PersonalityEngine, RAG) | 🟡 | ✅ Done |
-| 4 | Integration tests — auth endpoints | Register, login, Google SSO, protected route | 🟡 | ⬜ Pending |
-| 5 | Integration tests — responses endpoints | Queue, approve, reject, regenerate | 🟡 | ⬜ Pending |
-| 6 | Integration tests — webhook handler | Signature verification, comment processing | 🔴 | ⬜ Pending |
-| 7 | Minimum 80% coverage | Enforce with `pytest --cov` in CI | 🟡 | ⬜ Pending |
+| 4 | API endpoint tests | 17 tests (influencers, knowledge, responses, webhooks) | 🟡 | ✅ Done |
+| 5 | Integration tests — auth endpoints | Register, login, Google SSO, protected route | 🟡 | ⬜ Pending |
+| 6 | Minimum 80% coverage | Enforce with `pytest --cov` in CI | 🟡 | ⬜ Pending |
 
 ---
 
