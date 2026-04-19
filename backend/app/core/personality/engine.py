@@ -13,11 +13,11 @@ class PersonalityEngine:
     def __init__(self, db: Session):
         self._db = db
 
-    def generate(self, influencer: Influencer, comment: Comment) -> str:
+    async def generate(self, influencer: Influencer, comment: Comment) -> str:
         system_prompt, user_message = build_prompt(influencer=influencer, comment=comment, db=self._db)
         provider = get_provider(influencer.llm_provider)
         try:
-            return provider.generate(system_prompt=system_prompt, user_message=user_message)
+            return await provider.generate(system_prompt=system_prompt, user_message=user_message)
         except Exception:
             logger.exception("LLM generation failed for influencer %s", influencer.id)
             raise
