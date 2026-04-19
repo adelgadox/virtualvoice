@@ -103,7 +103,18 @@
 | 11 | `PATCH /knowledge/{id}` | Update knowledge entry | 🟢 | ✅ Done |
 | 12 | `DELETE /knowledge/{id}` | Soft-delete a knowledge entry | 🟢 | ✅ Done |
 
-#### 1.7 — Backend Tests 🔧
+#### 1.7 — Security & Rate Limiting ✅
+
+| # | Task | Description | Complexity | Status |
+|---|------|-------------|------------|--------|
+| 1 | `slowapi` integration | Limiter wired into FastAPI `app.state` + `RateLimitExceeded` handler | 🟢 | ✅ Done |
+| 2 | Real IP extraction | `get_client_ip` reads `X-Forwarded-For` (Railway proxy) before falling back to remote host | 🟢 | ✅ Done |
+| 3 | Auth endpoint limits | register 5/h · login 10/min · google 20/min · me 60/min | 🟢 | ✅ Done |
+| 4 | Response endpoint limits | list 60/min · approve 30/min · ignore 60/min · regenerate 10/min | 🟢 | ✅ Done |
+| 5 | Influencer & Knowledge limits | reads 60/min · writes/updates 20-30/min | 🟢 | ✅ Done |
+| 6 | Webhook limits | verify 20/min · Meta events 300/min (burst-tolerant) | 🟢 | ✅ Done |
+
+#### 1.8 — Backend Tests 🔧
 
 | # | Task | Description | Complexity | Status |
 |---|------|-------------|------------|--------|
@@ -218,14 +229,14 @@
 
 | # | Task | Description | Complexity | Status |
 |---|------|-------------|------------|--------|
-| 1 | Deploy backend on Railway | FastAPI service + environment variables | 🟡 | ⬜ Pending |
-| 2 | PostgreSQL on Railway | Provision DB + enable pgvector extension | 🟢 | ⬜ Pending |
-| 3 | Deploy frontend on Vercel | Next.js app with `NEXT_PUBLIC_API_URL` pointing to Railway | 🟢 | ⬜ Pending |
+| 1 | Deploy backend on Railway | FastAPI service + environment variables | 🟡 | ✅ Done |
+| 2 | PostgreSQL on Railway | Provision DB + enable pgvector extension | 🟢 | ✅ Done |
+| 3 | Deploy frontend on Vercel | Next.js app with `NEXT_PUBLIC_API_URL` pointing to Railway | 🟢 | ✅ Done |
 | 4 | Configure Meta webhooks | Register callback URL in Meta Developer Console | 🟡 | ⬜ Pending |
-| 5 | Production environment variables | All secrets configured in Railway and Vercel | 🟢 | ⬜ Pending |
-| 6 | CI/CD — GitHub Actions | Run tests on every PR; block merge on failure | 🟡 | ⬜ Pending |
+| 5 | Production environment variables | All secrets configured in Railway and Vercel | 🟢 | ✅ Done |
+| 6 | CI/CD — GitHub Actions | Run tests on every PR; block merge on failure | 🟡 | ✅ Done |
 | 7 | Error monitoring | Sentry or Railway native logs + alerting | 🟡 | ⬜ Pending |
 
 ---
 
-*Last updated: 2026-04-20 (Phase 1.3 + 1.4 complete)*
+*Last updated: 2026-04-19 (Phase 1.7 rate limiting complete · Phase 5 backend + frontend deployed)*
