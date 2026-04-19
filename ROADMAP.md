@@ -1,232 +1,232 @@
 # ROADMAP — VirtualVoice
 
-Estado actual del proyecto y fases de desarrollo.
+Development phases and current project status.
 
-**Leyenda:** ✅ Completo · 🔧 En progreso · ⬜ Pendiente
+**Legend:** ✅ Complete · 🔧 In Progress · ⬜ Pending
 
 ---
 
-## Fase 0 — Infraestructura base
-> Setup inicial del proyecto, estructura de carpetas y configuración de entorno.
+## Phase 0 — Base Infrastructure
+> Initial project setup, folder structure, and environment configuration.
 
-| Tarea | Estado | Notas |
-|-------|--------|-------|
-| Estructura monorepo `backend/` + `frontend/` | ✅ | |
-| `Dockerfile` backend | ✅ | Multi-stage, Python 3.12-slim |
-| `docker-compose.yml` local | ✅ | Postgres en puerto 5433 |
+| Task | Status | Notes |
+|------|--------|-------|
+| Monorepo structure `backend/` + `frontend/` | ✅ | |
+| Backend `Dockerfile` | ✅ | Multi-stage, Python 3.12-slim |
+| `docker-compose.yml` local | ✅ | db:5433, backend:8001, frontend:3000 |
 | `requirements.txt` | ✅ | FastAPI, SQLAlchemy, Alembic, pgvector, etc. |
-| Variables de entorno (`.env.example`) | ✅ | |
-| Configuración con Pydantic Settings (`config.py`) | ✅ | |
-| Setup Alembic + primera migración | ✅ | Tablas creadas en DB local |
-| `main.py` con CORS, rate limit y routers registrados | ✅ | |
+| Environment variables (`.env.example`) | ✅ | |
+| Pydantic Settings config (`config.py`) | ✅ | |
+| Alembic setup + initial migration | ✅ | Tables created in local DB |
+| `main.py` with CORS, rate limit, routers | ✅ | |
 
 ---
 
-## Fase 1 — Backend Core (MVP)
-> Funcionalidad mínima viable: recibir comentarios, generar respuesta, aprobar y publicar.
+## Phase 1 — Backend Core (MVP)
+> Minimum viable functionality: receive comments, generate response, approve and publish.
 
-### 1.1 Modelos y esquemas
+### 1.1 Models & Schemas
 
-| Tarea | Estado | Notas |
-|-------|--------|-------|
-| Modelo `User` | ✅ | |
-| Modelo `Influencer` | ✅ | |
-| Modelo `SocialAccount` | ✅ | |
-| Modelo `Comment` | ✅ | |
-| Modelo `PendingResponse` | ✅ | |
-| Modelo `KnowledgeEntry` | ✅ | |
-| Schemas Pydantic (influencer, response, knowledge, auth) | ✅ | |
-| Migración pgvector — columna `embedding` en `knowledge_entries` | ⬜ | Requiere `CREATE EXTENSION vector` en DB |
+| Task | Status | Notes |
+|------|--------|-------|
+| `User` model | ✅ | google_id, avatar_url, auth_provider |
+| `Influencer` model | ✅ | |
+| `SocialAccount` model | ✅ | |
+| `Comment` model | ✅ | |
+| `PendingResponse` model | ✅ | |
+| `KnowledgeEntry` model | ✅ | |
+| Pydantic schemas (influencer, response, knowledge, auth) | ✅ | |
+| pgvector migration — `embedding` column in `knowledge_entries` | ⬜ | Requires `CREATE EXTENSION vector` |
 
-### 1.2 Autenticación
+### 1.2 Authentication
 
-| Tarea | Estado | Notas |
-|-------|--------|-------|
-| Login email/password (`POST /auth/login`) | ✅ | JWT implementado |
-| Middleware de autenticación (`get_current_user`) | ✅ | |
-| Hash de contraseñas con bcrypt | ✅ | |
-| Registro de usuario (`POST /auth/register`) | ⬜ | |
-| Google SSO — endpoint backend (`POST /auth/google`) | ⬜ | Verifica Google ID token, crea/busca user |
-| User model — campos Google (`google_id`, `avatar_url`, `auth_provider`) | ⬜ | `hashed_password` debe ser nullable |
-| Migración para nuevos campos de usuario | ⬜ | |
+| Task | Status | Notes |
+|------|--------|-------|
+| Email/password login (`POST /auth/login`) | ✅ | JWT implemented |
+| Authentication middleware (`get_current_user`) | ✅ | |
+| Password hashing with bcrypt | ✅ | |
+| User registration (`POST /auth/register`) | ✅ | |
+| Google SSO backend endpoint (`POST /auth/google`) | ✅ | Verifies Google token, creates/finds user |
+| User model — Google fields (`google_id`, `avatar_url`, `auth_provider`) | ✅ | `hashed_password` is nullable |
+| Migration for new user fields | ✅ | Applied |
 
 ### 1.3 LLM Provider Layer
 
-| Tarea | Estado | Notas |
-|-------|--------|-------|
-| Interfaz abstracta `LLMProvider` (`base.py`) | ✅ | |
-| `GeminiProvider` | 🔧 | Archivo creado, implementar llamada real a API |
+| Task | Status | Notes |
+|------|--------|-------|
+| Abstract interface `LLMProvider` (`base.py`) | ✅ | |
+| `GeminiProvider` | 🔧 | File created, implement real API call |
 | `AnthropicProvider` | 🔧 | |
 | `OpenAIProvider` | 🔧 | |
-| `LLMFactory` — selección por config | 🔧 | |
+| `LLMFactory` — selection by config | 🔧 | |
 
 ### 1.4 Personality Engine
 
-| Tarea | Estado | Notas |
-|-------|--------|-------|
-| `PromptBuilder` — construir system prompt desde influencer | 🔧 | Archivo creado |
-| `PersonalityEngine` — orquesta prompt + LLM | 🔧 | |
-| RAG básico (sin pgvector, knowledge base estático) | ⬜ | Para MVP sin embeddings |
+| Task | Status | Notes |
+|------|--------|-------|
+| `PromptBuilder` — build system prompt from influencer | 🔧 | File created |
+| `PersonalityEngine` — orchestrate prompt + LLM | 🔧 | |
+| Basic RAG (without pgvector, static knowledge base) | ⬜ | For MVP without embeddings |
 
 ### 1.5 Meta Integration
 
-| Tarea | Estado | Notas |
-|-------|--------|-------|
-| Verificación de webhook (`GET /webhooks/meta`) | 🔧 | Router creado |
-| Recepción de comentarios (`POST /webhooks/meta`) | 🔧 | |
-| Verificación de firma `X-Hub-Signature-256` | ⬜ | |
-| Publicar respuesta aprobada (`graph_api.py`) | 🔧 | |
-| `token_manager.py` — manejo de Page Access Token | ⬜ | |
+| Task | Status | Notes |
+|------|--------|-------|
+| Webhook verification (`GET /webhooks/meta`) | 🔧 | Router created |
+| Comment reception (`POST /webhooks/meta`) | 🔧 | |
+| Signature verification `X-Hub-Signature-256` | ⬜ | |
+| Publish approved response (`graph_api.py`) | 🔧 | |
+| `token_manager.py` — Page Access Token management | ⬜ | |
 
-### 1.6 API REST — Endpoints
+### 1.6 REST API — Endpoints
 
-| Tarea | Estado | Notas |
-|-------|--------|-------|
-| `GET /influencers` — listar influencers | 🔧 | Router creado, lógica por completar |
-| `POST /influencers` — crear influencer | 🔧 | |
-| `GET /responses` — cola de respuestas pendientes | 🔧 | |
-| `PATCH /responses/{id}/approve` — aprobar respuesta | 🔧 | |
-| `PATCH /responses/{id}/reject` — rechazar/ignorar | 🔧 | |
-| `POST /responses/{id}/regenerate` — regenerar con LLM | ⬜ | |
-| `GET /knowledge` — listar entradas del knowledge base | 🔧 | |
-| `POST /knowledge` — agregar entrada | 🔧 | |
-| `DELETE /knowledge/{id}` — eliminar entrada | ⬜ | |
+| Task | Status | Notes |
+|------|--------|-------|
+| `GET /influencers` — list influencers | 🔧 | Router created |
+| `POST /influencers` — create influencer | 🔧 | |
+| `GET /responses` — pending response queue | 🔧 | |
+| `PATCH /responses/{id}/approve` — approve response | 🔧 | |
+| `PATCH /responses/{id}/reject` — reject/ignore | 🔧 | |
+| `POST /responses/{id}/regenerate` — regenerate with LLM | ⬜ | |
+| `GET /knowledge` — list knowledge base entries | 🔧 | |
+| `POST /knowledge` — add entry | 🔧 | |
+| `DELETE /knowledge/{id}` — delete entry | ⬜ | |
 
-### 1.7 Tests Backend
+### 1.7 Backend Tests
 
-| Tarea | Estado | Notas |
-|-------|--------|-------|
-| Setup pytest + pytest-asyncio | ⬜ | |
-| Tests unitarios — LLM providers (mock) | ⬜ | |
-| Tests unitarios — Personality Engine | ⬜ | |
-| Tests integración — endpoints auth | ⬜ | |
-| Tests integración — endpoints responses | ⬜ | |
-| Tests integración — webhook handler | ⬜ | |
-| Cobertura mínima 80% | ⬜ | |
+| Task | Status | Notes |
+|------|--------|-------|
+| pytest + pytest-asyncio setup | ⬜ | |
+| Unit tests — LLM providers (mock) | ⬜ | |
+| Unit tests — Personality Engine | ⬜ | |
+| Integration tests — auth endpoints | ⬜ | |
+| Integration tests — responses endpoints | ⬜ | |
+| Integration tests — webhook handler | ⬜ | |
+| Minimum 80% coverage | ⬜ | |
 
 ---
 
-## Fase 2 — Frontend (Panel de Aprobación)
-> Interfaz interna en Next.js para gestionar la cola de respuestas.
+## Phase 2 — Frontend (Approval Panel)
+> Internal Next.js interface to manage the response queue.
 
 ### 2.1 Setup
 
-| Tarea | Estado | Notas |
-|-------|--------|-------|
-| Proyecto Next.js 15 + TypeScript + Tailwind | ✅ | Ya inicializado |
-| `next-auth` v5 instalado | ✅ | |
-| Cliente HTTP hacia backend (`lib/api.ts`) | ⬜ | |
-| Layout base + navegación del dashboard | ⬜ | |
-| Pantalla Login (email/pass + Google SSO) | ⬜ | `/login` |
-| Pantalla Registro (email/pass + Google SSO) | ⬜ | `/register` |
-| NextAuth config — Credentials provider + Google provider | ⬜ | |
-| Protección de rutas — redirect a `/login` si no autenticado | ⬜ | |
-| Dashboard shell (layout autenticado) | ⬜ | `/dashboard` |
+| Task | Status | Notes |
+|------|--------|-------|
+| Next.js 15 + TypeScript + Tailwind | ✅ | |
+| next-auth v5 installed | ✅ | |
+| HTTP client to backend (`lib/api.ts`) | ✅ | |
+| Auth group layout with gradient background | ✅ | |
+| Login page (email/pass + Google SSO) | ✅ | `/login` |
+| Register page (email/pass + Google SSO) | ✅ | `/register` |
+| NextAuth config — Credentials + Google providers | ✅ | |
+| Route protection — redirect to `/login` if not authenticated | ✅ | |
+| Dashboard layout with sidebar (desktop + mobile bottom nav) | ✅ | |
 
-### 2.2 Cola de aprobación
+### 2.2 Approval Queue
 
-| Tarea | Estado | Notas |
-|-------|--------|-------|
-| Página `/queue` — lista de respuestas pendientes | ⬜ | |
-| Componente `ApprovalCard` — comentario + respuesta + acciones | ⬜ | |
-| Acción Aprobar | ⬜ | |
-| Acción Editar inline | ⬜ | |
-| Acción Regenerar | ⬜ | |
-| Acción Ignorar | ⬜ | |
-| Filtro por influencer | ⬜ | |
-| Polling o WebSocket para actualización en tiempo real | ⬜ | |
+| Task | Status | Notes |
+|------|--------|-------|
+| `/dashboard/queue` — pending response list | ⬜ | |
+| `ApprovalCard` component — comment + response + actions | ⬜ | |
+| Approve action | ⬜ | |
+| Inline edit action | ⬜ | |
+| Regenerate action | ⬜ | |
+| Ignore action | ⬜ | |
+| Filter by influencer | ⬜ | |
+| Polling or WebSocket for real-time updates | ⬜ | |
 
-### 2.3 Gestión de influencers
+### 2.3 Influencer Management
 
-| Tarea | Estado | Notas |
-|-------|--------|-------|
-| Página `/influencers` — lista de influencers | ⬜ | |
-| Formulario crear/editar influencer | ⬜ | |
-| Editor de system prompt | ⬜ | |
+| Task | Status | Notes |
+|------|--------|-------|
+| `/dashboard/influencers` — influencer list | ⬜ | |
+| Create/edit influencer form | ⬜ | |
+| System prompt editor | ⬜ | |
 
 ### 2.4 Knowledge Base Editor
 
-| Tarea | Estado | Notas |
-|-------|--------|-------|
-| Página `/knowledge` — entradas por influencer | ⬜ | |
-| Agregar / editar / eliminar entradas | ⬜ | |
-| Categorías: biography, opinions, voice_examples, off_limits, etc. | ⬜ | |
+| Task | Status | Notes |
+|------|--------|-------|
+| `/dashboard/knowledge` — entries by influencer | ⬜ | |
+| Add / edit / delete entries | ⬜ | |
+| Categories: biography, opinions, voice_examples, off_limits, etc. | ⬜ | |
 
-### 2.5 Tests Frontend
+### 2.5 Frontend Tests
 
-| Tarea | Estado | Notas |
-|-------|--------|-------|
-| Tests unitarios — componentes principales | ⬜ | |
-| Tests E2E — flujo aprobar respuesta | ⬜ | |
-| Tests E2E — login y acceso protegido | ⬜ | |
-
----
-
-## Fase 3 — RAG + Multiinfluencer
-> Inteligencia real: embeddings, búsqueda semántica y soporte multi-cuenta.
-
-| Tarea | Estado | Notas |
-|-------|--------|-------|
-| Activar extensión `pgvector` en Railway | ⬜ | `CREATE EXTENSION vector;` |
-| Generar embeddings al guardar knowledge entries | ⬜ | Usar Gemini embeddings API |
-| Implementar búsqueda RAG en `rag.py` | ⬜ | `k` fragmentos más relevantes por cosine similarity |
-| Integrar RAG en Personality Engine | ⬜ | |
-| Feedback loop: respuestas aprobadas → voice_examples automáticos | ⬜ | |
-| Soporte multi-influencer completo (filtros, selección en webhook) | ⬜ | |
+| Task | Status | Notes |
+|------|--------|-------|
+| Unit tests — main components | ⬜ | |
+| E2E tests — approve response flow | ⬜ | |
+| E2E tests — login and protected access | ⬜ | |
 
 ---
 
-## Fase 4 — Calidad e Inteligencia
-> Métricas, notificaciones y contexto situacional dinámico.
+## Phase 3 — RAG + Multi-influencer
+> Real intelligence: embeddings, semantic search, and multi-account support.
 
-| Tarea | Estado | Notas |
-|-------|--------|-------|
-| Contexto situacional dinámico (mood, posts recientes del influencer) | ⬜ | |
-| Dashboard métricas: tasa aprobación, tasa edición, tasa rechazo | ⬜ | |
-| Notificaciones Slack cuando hay comentarios nuevos | ⬜ | |
-| Renovación automática de Page Access Token de Meta | ⬜ | |
-| Soporte Threads (pendiente apertura API Meta) | ⬜ | |
-
----
-
-## Fase 4.5 — Expansión de Plataformas
-> Integrar redes más allá de Meta. Cada plataforma es un nuevo adapter en `core/platforms/`.
-
-| Tarea | Estado | Notas |
-|-------|--------|-------|
-| Refactor `platform` field → enum expandido (`instagram`, `facebook`, `threads`, `twitter`, `tiktok`, `onlyfans`) | ⬜ | Ya es String libre, solo documentar valores válidos |
-| Twitter/X — leer menciones y replies vía API v2 | ⬜ | Requiere Twitter Developer App |
-| Twitter/X — publicar respuesta aprobada | ⬜ | |
-| TikTok — leer comentarios vía TikTok API | ⬜ | TikTok for Developers |
-| TikTok — publicar respuesta aprobada | ⬜ | |
-| OnlyFans — investigar API disponible | ⬜ | API oficial limitada, puede requerir solución alternativa |
-| Panel frontend — selector de plataforma en filtros | ⬜ | |
+| Task | Status | Notes |
+|------|--------|-------|
+| Enable `pgvector` extension on Railway | ⬜ | `CREATE EXTENSION vector;` |
+| Generate embeddings when saving knowledge entries | ⬜ | Use Gemini embeddings API |
+| Implement RAG search in `rag.py` | ⬜ | `k` most relevant fragments by cosine similarity |
+| Integrate RAG into Personality Engine | ⬜ | |
+| Feedback loop: approved responses → voice_examples automatically | ⬜ | |
+| Full multi-influencer support (filters, selection in webhook) | ⬜ | |
 
 ---
 
-## Fase 5 — Producción
-> Despliegue, seguridad y monitoreo.
+## Phase 4 — Quality & Intelligence
+> Metrics, notifications, and dynamic situational context.
 
-| Tarea | Estado | Notas |
-|-------|--------|-------|
-| Deploy backend en Railway | ⬜ | |
-| Provisionar PostgreSQL en Railway + activar pgvector | ⬜ | |
-| Deploy frontend en Vercel | ⬜ | |
-| Configurar webhooks en Meta Developer Console | ⬜ | |
-| Variables de entorno en producción | ⬜ | |
-| CI/CD — GitHub Actions (tests en cada PR) | ⬜ | |
-| Monitoreo de errores (Sentry o Railway logs) | ⬜ | |
+| Task | Status | Notes |
+|------|--------|-------|
+| Dynamic situational context (mood, recent posts) | ⬜ | |
+| Metrics dashboard: approval rate, edit rate, rejection rate | ⬜ | |
+| Slack notifications for new comments | ⬜ | |
+| Automatic Meta Page Access Token renewal | ⬜ | |
+| Threads support (pending Meta API opening) | ⬜ | |
 
 ---
 
-## Orden de trabajo sugerido
+## Phase 4.5 — Platform Expansion
+> Integrate networks beyond Meta. Each platform is a new adapter in `core/platforms/`.
+
+| Task | Status | Notes |
+|------|--------|-------|
+| Twitter/X — read mentions and replies via API v2 | ⬜ | Requires Twitter Developer App |
+| Twitter/X — publish approved response | ⬜ | |
+| TikTok — read comments via TikTok API | ⬜ | TikTok for Developers |
+| TikTok — publish approved response | ⬜ | |
+| OnlyFans — research available API | ⬜ | Official API limited |
+| Frontend panel — platform selector in filters | ⬜ | |
+
+---
+
+## Phase 5 — Production
+> Deployment, security, and monitoring.
+
+| Task | Status | Notes |
+|------|--------|-------|
+| Deploy backend on Railway | ⬜ | |
+| Provision PostgreSQL on Railway + enable pgvector | ⬜ | |
+| Deploy frontend on Vercel | ⬜ | |
+| Configure webhooks in Meta Developer Console | ⬜ | |
+| Production environment variables | ⬜ | |
+| CI/CD — GitHub Actions (tests on every PR) | ⬜ | |
+| Error monitoring (Sentry or Railway logs) | ⬜ | |
+
+---
+
+## Suggested Work Order
 
 ```
-Fase 1.2 (Auth) → Fase 1.3 (LLM) → Fase 1.4 (Personality Engine)
-→ Fase 1.5 (Meta) → Fase 1.6 (API endpoints) → Fase 1.7 (Tests)
-→ Fase 2 (Frontend) → Fase 3 (RAG) → Fase 4 → Fase 5
+Phase 1.3 (LLM) → Phase 1.4 (Personality Engine) → Phase 1.5 (Meta)
+→ Phase 1.6 (API endpoints) → Phase 1.7 (Tests)
+→ Phase 2.2 (Approval Queue) → Phase 2.3 (Influencers) → Phase 2.4 (Knowledge)
+→ Phase 3 (RAG) → Phase 4 → Phase 5
 ```
 
 ---
 
-*Última actualización: 2026-04-18*
+*Last updated: 2026-04-19*
