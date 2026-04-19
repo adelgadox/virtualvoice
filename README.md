@@ -163,9 +163,9 @@ virtualvoice/
 | Service | Use |
 |---|---|
 | **Meta Graph API** | Read comments and publish responses |
-| **Google Gemini API** | Primary LLM (swappable) |
-| **Anthropic API** | Alternative LLM |
-| **OpenAI API** | Alternative LLM |
+| **Google Gemini API** | LLM option (native SDK) |
+| **Anthropic API** | LLM option (native SDK) |
+| **OpenAI / DeepSeek / Qwen / Perplexity / Groq / Mistral / Ollama** | LLM options via generic OpenAI-compatible adapter |
 
 ### Deployment
 | Service | What it deploys |
@@ -214,24 +214,27 @@ final_prompt = system_prompt_core
 
 Designed to switch LLM providers without modifying business logic. Each influencer can even use a different LLM.
 
+Three provider types are supported:
+
+- **`GeminiProvider`** — Google Gemini (native SDK)
+- **`AnthropicProvider`** — Anthropic Claude (native SDK)
+- **`OpenAICompatibleProvider`** — generic adapter for any OpenAI-spec API: OpenAI, DeepSeek, Qwen, Perplexity, Groq, Together, Mistral, Ollama, or any custom endpoint
+
+Adding a new provider requires **zero code changes** — just set env vars:
+
+```env
+LLM_PROVIDER=deepseek
+DEEPSEEK_API_KEY=sk-...
+DEEPSEEK_MODEL=deepseek-chat        # optional — falls back to registry default
+DEEPSEEK_BASE_URL=https://...       # optional — falls back to registry default
+```
+
 ```python
-class LLMProvider(ABC):
-    @abstractmethod
-    async def generate(self, system_prompt: str, user_message: str) -> str: ...
-
-class GeminiProvider(LLMProvider): ...
-class AnthropicProvider(LLMProvider): ...
-class OpenAIProvider(LLMProvider): ...
-
-class LLMFactory:
-    @staticmethod
-    def get_provider(provider_name: str) -> LLMProvider:
-        providers = {
-            "gemini": GeminiProvider,
-            "anthropic": AnthropicProvider,
-            "openai": OpenAIProvider,
-        }
-        return providers[provider_name]()
+# factory.py — provider resolution
+def get_provider(provider_name: str) -> LLMProvider:
+    if name == "gemini":    return GeminiProvider()
+    if name == "anthropic": return AnthropicProvider()
+    return OpenAICompatibleProvider(name)   # everything else
 ```
 
 ---
@@ -315,11 +318,14 @@ FRONTEND_URL=http://localhost:3000
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 
-# LLM Providers
+# LLM Provider — set to: gemini | anthropic | openai | deepseek | qwen | perplexity | groq | mistral | ollama | <any>
 LLM_PROVIDER=gemini
 GEMINI_API_KEY=
 ANTHROPIC_API_KEY=
+# OpenAI-compatible providers: set {PROVIDER}_API_KEY (required), {PROVIDER}_BASE_URL and {PROVIDER}_MODEL (optional)
 OPENAI_API_KEY=
+DEEPSEEK_API_KEY=
+GROQ_API_KEY=
 
 # Meta / Facebook Graph API
 META_APP_ID=

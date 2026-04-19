@@ -55,10 +55,10 @@ Development phases and current project status.
 | Task | Status | Notes |
 |------|--------|-------|
 | Abstract interface `LLMProvider` (`base.py`) | ✅ | |
-| `GeminiProvider` | 🔧 | File created, implement real API call |
-| `AnthropicProvider` | 🔧 | |
-| `OpenAIProvider` | 🔧 | |
-| `LLMFactory` — selection by config | 🔧 | |
+| `GeminiProvider` | ✅ | Native SDK, `generate_content_async` |
+| `AnthropicProvider` | ✅ | Native SDK, `AsyncAnthropic` |
+| `OpenAICompatibleProvider` | ✅ | Generic adapter: OpenAI, DeepSeek, Qwen, Perplexity, Groq, Mistral, Ollama, any custom endpoint |
+| `get_provider()` factory — selection by config | ✅ | `LLM_PROVIDER` env var; zero code changes to add new providers |
 
 ### 1.4 Personality Engine
 
@@ -96,8 +96,8 @@ Development phases and current project status.
 
 | Task | Status | Notes |
 |------|--------|-------|
-| pytest + pytest-asyncio setup | ⬜ | |
-| Unit tests — LLM providers (mock) | ⬜ | |
+| pytest + pytest-asyncio setup | ✅ | `pytest.ini` with `asyncio_mode=auto`, `conftest.py` with SDK mocks |
+| Unit tests — LLM providers (mock) | ✅ | 13 tests: Gemini, Anthropic, OpenAICompatible, factory |
 | Unit tests — Personality Engine | ⬜ | |
 | Integration tests — auth endpoints | ⬜ | |
 | Integration tests — responses endpoints | ⬜ | |
@@ -229,4 +229,4 @@ Phase 1.3 (LLM) → Phase 1.4 (Personality Engine) → Phase 1.5 (Meta)
 
 ---
 
-*Last updated: 2026-04-19*
+*Last updated: 2026-04-20*
