@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 import bcrypt
 import jwt
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -16,6 +16,7 @@ from app.schemas.auth import (
     UserOut,
 )
 from app.dependencies import get_current_user
+from app.utils.rate_limit import limiter
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -34,7 +35,8 @@ def _create_token(user_id: str) -> str:
 
 
 @router.post("/register", response_model=TokenOut, status_code=status.HTTP_201_CREATED)
-def register(body: RegisterRequest, db: Session = Depends(get_db)):
+@limiter.limit("5/hour")
+def register(request: Request, body: RegisterRequest, db: Session = Depends(get_db)):
     existing = db.query(User).filter(User.email == body.email).first()
     if existing:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
@@ -52,7 +54,8 @@ def register(body: RegisterRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=TokenOut)
-def login(body: LoginRequest, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def login(request: Request, body: LoginRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == body.email, User.is_active == True).first()  # noqa: E712
     if not user or not user.hashed_password or not _verify_password(body.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
@@ -60,7 +63,8 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/google", response_model=TokenOut)
-def google_auth(body: GoogleAuthRequest, db: Session = Depends(get_db)):
+@limiter.limit("20/minute")
+def google_auth(request: Request, body: GoogleAuthRequest, db: Session = Depends(get_db)):
     # Find existing user by google_id or email
     user = db.query(User).filter(User.google_id == body.google_id).first()
 
@@ -99,5 +103,6 @@ def google_auth(body: GoogleAuthRequest, db: Session = Depends(get_db)):
 
 
 @router.get("/me", response_model=UserOut)
-def me(current_user: User = Depends(get_current_user)):
+@limiter.limit("60/minute")
+def me(request: Request, current_user: User = Depends(get_current_user)):
     return current_user

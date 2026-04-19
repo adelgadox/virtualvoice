@@ -15,6 +15,7 @@
   - [LLM Provider Pattern](#llm-provider-pattern)
   - [Knowledge Base & RAG](#knowledge-base--rag)
   - [Meta Integration](#meta-integration)
+  - [Rate Limiting](#rate-limiting)
   - [Approval Panel](#approval-panel)
 - [Database](#database)
 - [Environment Variables](#environment-variables)
@@ -272,6 +273,26 @@ Body: { "message": "approved response" }
 
 ---
 
+### Rate Limiting
+
+All endpoints are protected with **slowapi** (token bucket per IP). Real client IP is extracted from `X-Forwarded-For` to work correctly behind Railway's proxy.
+
+| Endpoint group | Limit |
+|---|---|
+| `POST /auth/register` | 5 / hour |
+| `POST /auth/login` | 10 / minute |
+| `POST /auth/google` | 20 / minute |
+| `GET /auth/me` | 60 / minute |
+| `POST /responses/{id}/regenerate` | 10 / minute |
+| `POST /responses/{id}/approve` | 30 / minute |
+| List endpoints (influencers, knowledge, responses) | 60 / minute |
+| Write endpoints (influencers, knowledge) | 20–30 / minute |
+| `POST /webhooks/meta` | 300 / minute (burst-tolerant for Meta) |
+
+Exceeding a limit returns `HTTP 429 Too Many Requests`.
+
+---
+
 ### Approval Panel
 
 Internal Next.js interface where the team manages the pending response queue.
@@ -385,18 +406,43 @@ Same pattern as Bioflow: **monorepo with independent deployment per service**.
 
 1. Connect the repository to Railway
 2. Set **Root Directory** to `backend/`
-3. Add environment variables
-4. Provision a PostgreSQL database and enable pgvector:
+3. Add environment variables (see table below)
+4. Set `DATABASE_URL` using Railway's reference variable: `${{ Postgres.DATABASE_URL }}`
+5. Set `PORT=8000` and configure Public Networking to port `8000`
+6. Provision a PostgreSQL database and enable pgvector:
    ```sql
    CREATE EXTENSION vector;
    ```
+
+**Required Railway variables:**
+
+| Variable | Value |
+|---|---|
+| `DATABASE_URL` | `${{ Postgres.DATABASE_URL }}` |
+| `SECRET_KEY` | `openssl rand -hex 32` |
+| `ALGORITHM` | `HS256` |
+| `FRONTEND_URL` | `https://<your-vercel-app>.vercel.app` |
+| `PORT` | `8000` |
+| `DEBUG` | `false` |
+| `META_WEBHOOK_VERIFY_TOKEN` | any secret string |
 
 ### Frontend → Vercel
 
 1. Connect the repository to Vercel
 2. Set **Root Directory** to `frontend/`
 3. Framework preset: **Next.js**
-4. Add environment variables (`NEXT_PUBLIC_API_URL` pointing to Railway)
+4. Add environment variables
+
+**Required Vercel variables:**
+
+| Variable | Value |
+|---|---|
+| `AUTH_SECRET` | `openssl rand -hex 32` |
+| `AUTH_URL` | `https://<your-vercel-app>.vercel.app` |
+| `NEXT_PUBLIC_API_URL` | `https://<your-railway-backend>.up.railway.app` |
+| `API_URL` | `https://<your-railway-backend>.up.railway.app` |
+| `GOOGLE_CLIENT_ID` | from Google Cloud Console |
+| `GOOGLE_CLIENT_SECRET` | from Google Cloud Console |
 
 ---
 

@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -12,12 +12,15 @@ from app.models.pending_response import PendingResponse
 from app.models.social_account import SocialAccount
 from app.models.user import User
 from app.schemas.response import ApproveRequest, PendingResponseOut
+from app.utils.rate_limit import limiter
 
 router = APIRouter(prefix="/responses", tags=["responses"])
 
 
 @router.get("/pending", response_model=list[PendingResponseOut])
+@limiter.limit("60/minute")
 def list_pending(
+    request: Request,
     influencer_id: UUID | None = None,
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
@@ -29,7 +32,9 @@ def list_pending(
 
 
 @router.get("/history", response_model=list[PendingResponseOut])
+@limiter.limit("60/minute")
 def list_history(
+    request: Request,
     influencer_id: UUID | None = None,
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
@@ -41,7 +46,9 @@ def list_history(
 
 
 @router.post("/{response_id}/approve", response_model=PendingResponseOut)
+@limiter.limit("30/minute")
 async def approve_response(
+    request: Request,
     response_id: UUID,
     body: ApproveRequest,
     db: Session = Depends(get_db),
@@ -93,7 +100,9 @@ async def approve_response(
 
 
 @router.post("/{response_id}/ignore", response_model=PendingResponseOut)
+@limiter.limit("60/minute")
 def ignore_response(
+    request: Request,
     response_id: UUID,
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
@@ -111,7 +120,9 @@ def ignore_response(
 
 
 @router.post("/{response_id}/regenerate", response_model=PendingResponseOut)
+@limiter.limit("10/minute")
 async def regenerate_response(
+    request: Request,
     response_id: UUID,
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
