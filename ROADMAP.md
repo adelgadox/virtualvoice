@@ -157,21 +157,21 @@
 | 7 | Filter by influencer | Dropdown to scope queue to one influencer | 🟢 | ⬜ Pending |
 | 8 | Real-time updates | Polling or WebSocket for new comments | 🔴 | ⬜ Pending |
 
-#### 2.3 — Influencer Management ⬜
+#### 2.3 — Influencer Management ✅
 
 | # | Task | Description | Complexity | Status |
 |---|------|-------------|------------|--------|
-| 1 | `/dashboard/influencers` | Influencer list with status badges | 🟢 | ⬜ Pending |
-| 2 | Create / edit form | Name, slug, LLM provider selector | 🟡 | ⬜ Pending |
-| 3 | System prompt editor | Textarea with character count and preview | 🟡 | ⬜ Pending |
+| 1 | `/dashboard/influencers` | Influencer list with status badges | 🟢 | ✅ Done |
+| 2 | Create / edit form | Name, slug, LLM provider selector | 🟡 | ✅ Done |
+| 3 | System prompt editor | Textarea with character count and preview | 🟡 | ✅ Done |
 
-#### 2.4 — Knowledge Base Editor ⬜
+#### 2.4 — Knowledge Base Editor ✅
 
 | # | Task | Description | Complexity | Status |
 |---|------|-------------|------------|--------|
-| 1 | `/dashboard/knowledge` | Entries grouped by influencer | 🟡 | ⬜ Pending |
-| 2 | Add / edit / delete entries | CRUD UI for knowledge entries | 🟢 | ⬜ Pending |
-| 3 | Category tags | biography, opinions, voice_examples, off_limits, etc. | 🟢 | ⬜ Pending |
+| 1 | `/dashboard/knowledge` | Entries grouped by influencer | 🟡 | ✅ Done |
+| 2 | Add / edit / delete entries | CRUD UI for knowledge entries | 🟢 | ✅ Done |
+| 3 | Category tags | biography, opinions, voice_examples, off_limits, etc. | 🟢 | ✅ Done |
 
 #### 2.5 — Frontend Tests ⬜
 
