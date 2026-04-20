@@ -11,6 +11,7 @@ class SocialAccountOut(BaseModel):
     account_id: str
     page_id: str | None
     username: str | None
+    profile_picture_url: str | None
     is_active: bool
     created_at: datetime
 

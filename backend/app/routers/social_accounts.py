@@ -124,6 +124,7 @@ async def instagram_callback(
             existing.access_token = account["page_access_token"]
             existing.username = account["username"]
             existing.page_id = account["page_id"]
+            existing.profile_picture_url = account.get("profile_picture_url")
             existing.is_active = True
         else:
             db.add(SocialAccount(
@@ -132,6 +133,7 @@ async def instagram_callback(
                 account_id=account["account_id"],
                 page_id=account["page_id"],
                 username=account["username"],
+                profile_picture_url=account.get("profile_picture_url"),
                 access_token=account["page_access_token"],
             ))
         saved += 1

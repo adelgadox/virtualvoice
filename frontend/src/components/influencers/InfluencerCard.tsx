@@ -4,6 +4,7 @@ import type { Influencer } from "@/types/api";
 
 interface InfluencerCardProps {
   influencer: Influencer;
+  profilePictureUrl?: string | null;
   onEdit: (influencer: Influencer) => void;
   onManageAccounts?: (influencer: Influencer) => void;
 }
@@ -18,7 +19,7 @@ const PROVIDER_LABELS: Record<string, string> = {
   ollama: "Ollama",
 };
 
-export default function InfluencerCard({ influencer, onEdit, onManageAccounts }: InfluencerCardProps) {
+export default function InfluencerCard({ influencer, profilePictureUrl, onEdit, onManageAccounts }: InfluencerCardProps) {
   const provider = influencer.llm_provider
     ? (PROVIDER_LABELS[influencer.llm_provider] ?? influencer.llm_provider)
     : "Default";
@@ -30,6 +31,18 @@ export default function InfluencerCard({ influencer, onEdit, onManageAccounts }:
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-5 space-y-3">
       <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          {profilePictureUrl ? (
+            <img
+              src={profilePictureUrl}
+              alt={influencer.name}
+              className="w-10 h-10 rounded-full object-cover shrink-0 border border-gray-200 dark:border-gray-700"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center shrink-0 text-white font-semibold text-sm">
+              {influencer.name.charAt(0).toUpperCase()}
+            </div>
+          )}
         <div className="space-y-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
@@ -46,6 +59,7 @@ export default function InfluencerCard({ influencer, onEdit, onManageAccounts }:
             </span>
           </div>
           <p className="text-xs text-gray-400 font-mono">/{influencer.slug}</p>
+        </div>
         </div>
 
         <div className="flex items-center gap-1 shrink-0">

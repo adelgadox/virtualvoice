@@ -14,6 +14,7 @@ class SocialAccount(Base):
     account_id = Column(String, nullable=False, index=True)
     page_id = Column(String, nullable=True)
     username = Column(String, nullable=True)
+    profile_picture_url = Column(String, nullable=True)
     access_token = Column(String, nullable=True)
     token_expires_at = Column(DateTime(timezone=True), nullable=True)
     is_active = Column(Boolean, default=True)

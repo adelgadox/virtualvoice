@@ -8,7 +8,7 @@ import InfluencerCard from "@/components/influencers/InfluencerCard";
 import InfluencerForm from "@/components/influencers/InfluencerForm";
 import InfluencerOnboarding from "@/components/influencers/InfluencerOnboarding";
 import SocialAccountsList from "@/components/influencers/SocialAccountsList";
-import type { Influencer } from "@/types/api";
+import type { Influencer, SocialAccount } from "@/types/api";
 
 type ModalState =
   | { type: "closed" }
@@ -22,6 +22,7 @@ export default function InfluencersPage() {
   const searchParams = useSearchParams();
 
   const [influencers, setInfluencers] = useState<Influencer[]>([]);
+  const [socialAccounts, setSocialAccounts] = useState<SocialAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [modal, setModal] = useState<ModalState>({ type: "closed" });
@@ -61,8 +62,14 @@ export default function InfluencersPage() {
 
   useEffect(() => {
     if (!token) return;
-    apiFetch<Influencer[]>("/influencers/", { token })
-      .then(setInfluencers)
+    Promise.all([
+      apiFetch<Influencer[]>("/influencers/", { token }),
+      apiFetch<SocialAccount[]>("/social-accounts/", { token }),
+    ])
+      .then(([infs, accounts]) => {
+        setInfluencers(infs);
+        setSocialAccounts(accounts);
+      })
       .catch((err: unknown) => setError(err instanceof Error ? err.message : "Error al cargar"))
       .finally(() => setLoading(false));
   }, [token]);
@@ -147,14 +154,18 @@ export default function InfluencersPage() {
         )}
 
         {/* List */}
-        {!loading && influencers.map((inf) => (
-          <InfluencerCard
-            key={inf.id}
-            influencer={inf}
-            onEdit={(i) => setModal({ type: "edit", influencer: i })}
-            onManageAccounts={(i) => setModal({ type: "accounts", influencer: i })}
-          />
-        ))}
+        {!loading && influencers.map((inf) => {
+          const account = socialAccounts.find((a) => a.influencer_id === inf.id);
+          return (
+            <InfluencerCard
+              key={inf.id}
+              influencer={inf}
+              profilePictureUrl={account?.profile_picture_url}
+              onEdit={(i) => setModal({ type: "edit", influencer: i })}
+              onManageAccounts={(i) => setModal({ type: "accounts", influencer: i })}
+            />
+          );
+        })}
       </div>
 
       {/* Create modal — onboarding wizard */}
