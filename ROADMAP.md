@@ -122,8 +122,8 @@
 | 2 | Unit tests — LLM providers | 13 tests (Gemini, Anthropic, OpenAICompatible, factory) | 🟡 | ✅ Done |
 | 3 | Unit tests — Personality Engine | 12 tests (PromptBuilder, PersonalityEngine, RAG) | 🟡 | ✅ Done |
 | 4 | API endpoint tests | 17 tests (influencers, knowledge, responses, webhooks) | 🟡 | ✅ Done |
-| 5 | Integration tests — auth endpoints | Register, login, Google SSO, protected route | 🟡 | ⬜ Pending |
-| 6 | Minimum 80% coverage | Enforce with `pytest --cov` in CI | 🟡 | ⬜ Pending |
+| 5 | Integration tests — auth endpoints | Register, login, Google SSO, protected route | 🟡 | ✅ Done |
+| 6 | Minimum 80% coverage | Enforce with `pytest --cov` in CI | 🟡 | ✅ Done |
 
 ---
 
