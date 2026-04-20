@@ -6,7 +6,7 @@ from app.database import Base
 # pgvector type — loaded lazily so the extension is only required at runtime
 try:
     from pgvector.sqlalchemy import Vector  # type: ignore
-    _VECTOR_TYPE = Vector(1536)
+    _VECTOR_TYPE = Vector(768)
 except ImportError:
     from sqlalchemy import LargeBinary
     _VECTOR_TYPE = LargeBinary  # fallback for environments without pgvector
@@ -20,7 +20,7 @@ class KnowledgeEntry(Base):
     # biography | opinions | voice_examples | off_limits | brand_relationships | situational_context
     category = Column(String, nullable=False, index=True)
     content = Column(Text, nullable=False)
-    # pgvector embedding (1536 dims = text-embedding-3-small / Gemini text-embedding-004)
+    # pgvector embedding (768 dims — Gemini text-embedding-004 default output_dimensionality)
     embedding = Column(_VECTOR_TYPE, nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

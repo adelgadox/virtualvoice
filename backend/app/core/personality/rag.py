@@ -4,6 +4,12 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 
 from app.models.knowledge_entry import KnowledgeEntry
+from app.core.personality._embed import embed_text
+
+try:
+    from pgvector.sqlalchemy import Vector  # type: ignore
+except ImportError:
+    Vector = None  # type: ignore
 
 logger = logging.getLogger(__name__)
 
@@ -15,8 +21,8 @@ def retrieve_relevant_knowledge(influencer_id: UUID, query: str, db: Session, k:
     Falls back to returning the most recently updated entries if not.
     """
     try:
-        from pgvector.sqlalchemy import Vector  # type: ignore
-        from app.core.personality._embed import embed_text
+        if Vector is None:
+            raise RuntimeError("pgvector not installed")
 
         query_vec = embed_text(query)
         rows = (
