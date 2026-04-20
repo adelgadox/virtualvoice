@@ -37,7 +37,7 @@ export default function InfluencerOnboarding({ token, onDone, onCancel }: Props)
   const [error1, setError1] = useState<string | null>(null);
 
   // Step 3 state
-  const [llmProvider, setLlmProvider] = useState("");
+  const [llmProvider, setLlmProvider] = useState("deepseek");
   const [prompt, setPrompt] = useState("");
   const [saving3, setSaving3] = useState(false);
   const [error3, setError3] = useState<string | null>(null);

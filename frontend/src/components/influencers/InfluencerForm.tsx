@@ -29,7 +29,7 @@ export default function InfluencerForm({ influencer, token, onSaved, onCancel }:
 
   const [name, setName] = useState(influencer?.name ?? "");
   const [slug, setSlug] = useState(influencer?.slug ?? "");
-  const [llmProvider, setLlmProvider] = useState(influencer?.llm_provider ?? "");
+  const [llmProvider, setLlmProvider] = useState(influencer?.llm_provider ?? "deepseek");
   const [prompt, setPrompt] = useState(influencer?.system_prompt_core ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
