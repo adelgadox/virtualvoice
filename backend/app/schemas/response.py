@@ -15,6 +15,9 @@ class PendingResponseOut(BaseModel):
     approved_at: datetime | None = None
     published_at: datetime | None = None
     created_at: datetime
+    # Denormalized comment fields for display
+    comment_content: str | None = None
+    comment_author: str | None = None
 
     model_config = {"from_attributes": True}
 

@@ -35,7 +35,7 @@
 | 5 | `PendingResponse` model | Generated response with approval status | 🟢 | ✅ Done |
 | 6 | `KnowledgeEntry` model | Per-influencer knowledge base with pgvector embedding column | 🟡 | ✅ Done |
 | 7 | Pydantic schemas | Auth, influencer, response, knowledge entry schemas | 🟢 | ✅ Done |
-| 8 | pgvector migration | `CREATE EXTENSION vector` + `embedding` column on `knowledge_entries` | 🟡 | ⬜ Pending |
+| 8 | pgvector migration | `CREATE EXTENSION vector` + `embedding` column on `knowledge_entries` | 🟡 | ✅ Done |
 
 #### 1.2 — Authentication ✅
 

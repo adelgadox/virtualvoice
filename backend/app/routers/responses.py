@@ -17,6 +17,16 @@ from app.utils.rate_limit import limiter
 router = APIRouter(prefix="/responses", tags=["responses"])
 
 
+def _enrich(resp: PendingResponse, db: Session) -> PendingResponseOut:
+    """Attach comment content/author to the response DTO."""
+    comment = db.query(Comment).filter(Comment.id == resp.comment_id).first()
+    out = PendingResponseOut.model_validate(resp)
+    if comment:
+        out.comment_content = comment.content
+        out.comment_author = comment.author_username
+    return out
+
+
 @router.get("/pending", response_model=list[PendingResponseOut])
 @limiter.limit("60/minute")
 def list_pending(
@@ -28,7 +38,8 @@ def list_pending(
     query = db.query(PendingResponse).filter(PendingResponse.status == "pending")
     if influencer_id:
         query = query.filter(PendingResponse.influencer_id == influencer_id)
-    return query.order_by(PendingResponse.created_at.asc()).all()
+    rows = query.order_by(PendingResponse.created_at.asc()).all()
+    return [_enrich(r, db) for r in rows]
 
 
 @router.get("/history", response_model=list[PendingResponseOut])
