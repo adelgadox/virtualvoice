@@ -144,18 +144,18 @@
 | 7 | Dashboard layout | Sidebar (desktop) + bottom nav (mobile) | 🟡 | ✅ Done |
 | 8 | HTTP client | `lib/api.ts` with auth token injection | 🟢 | ✅ Done |
 
-#### 2.2 — Approval Queue ⬜
+#### 2.2 — Approval Queue ✅
 
 | # | Task | Description | Complexity | Status |
 |---|------|-------------|------------|--------|
-| 1 | `/dashboard/queue` | Pending response list page | 🟡 | ⬜ Pending |
-| 2 | `ApprovalCard` component | Original comment + suggested response + action buttons | 🟡 | ⬜ Pending |
-| 3 | Approve action | One-click publish to Meta | 🟢 | ⬜ Pending |
-| 4 | Inline edit action | Edit response text before publishing | 🟢 | ⬜ Pending |
-| 5 | Regenerate action | Request new LLM response | 🟢 | ⬜ Pending |
-| 6 | Ignore action | Archive without publishing | 🟢 | ⬜ Pending |
-| 7 | Filter by influencer | Dropdown to scope queue to one influencer | 🟢 | ⬜ Pending |
-| 8 | Real-time updates | Polling or WebSocket for new comments | 🔴 | ⬜ Pending |
+| 1 | `/dashboard/queue` | Pending response list page | 🟡 | ✅ Done |
+| 2 | `ApprovalCard` component | Original comment + suggested response + action buttons | 🟡 | ✅ Done |
+| 3 | Approve action | One-click publish to Meta | 🟢 | ✅ Done |
+| 4 | Inline edit action | Edit response text before publishing | 🟢 | ✅ Done |
+| 5 | Regenerate action | Request new LLM response | 🟢 | ✅ Done |
+| 6 | Ignore action | Archive without publishing | 🟢 | ✅ Done |
+| 7 | Filter by influencer | Dropdown to scope queue to one influencer | 🟢 | ✅ Done |
+| 8 | Real-time updates | Polling every 30s | 🔴 | ✅ Done |
 
 #### 2.3 — Influencer Management ✅
 
