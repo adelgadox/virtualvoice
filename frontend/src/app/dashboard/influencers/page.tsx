@@ -161,6 +161,7 @@ export default function InfluencersPage() {
               key={inf.id}
               influencer={inf}
               profilePictureUrl={account?.profile_picture_url}
+              instagramUsername={account?.username}
               onEdit={(i) => setModal({ type: "edit", influencer: i })}
               onManageAccounts={(i) => setModal({ type: "accounts", influencer: i })}
             />
