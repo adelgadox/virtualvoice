@@ -24,6 +24,17 @@ export interface KnowledgeEntry {
   updated_at: string | null;
 }
 
+export interface SocialAccount {
+  id: string;
+  influencer_id: string;
+  platform: string;
+  account_id: string;
+  page_id: string | null;
+  username: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
 export interface Influencer {
   id: string;
   name: string;
