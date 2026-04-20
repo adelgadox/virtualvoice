@@ -1,3 +1,4 @@
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -9,7 +10,9 @@ from app.models.knowledge_entry import KnowledgeEntry
 from app.models.user import User
 from app.schemas.knowledge import KnowledgeEntryCreate, KnowledgeEntryOut, KnowledgeEntryUpdate
 from app.utils.rate_limit import limiter
+from app.core.personality._embed import try_embed
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/knowledge", tags=["knowledge"])
 
 
@@ -34,6 +37,7 @@ def list_entries(
 @limiter.limit("30/minute")
 def create_entry(request: Request, body: KnowledgeEntryCreate, db: Session = Depends(get_db), _: User = Depends(get_current_user)):
     entry = KnowledgeEntry(**body.model_dump())
+    entry.embedding = try_embed(body.content)
     db.add(entry)
     db.commit()
     db.refresh(entry)
@@ -54,6 +58,9 @@ def update_entry(
         raise HTTPException(status_code=404, detail="Entry not found")
     for field, value in body.model_dump(exclude_unset=True).items():
         setattr(entry, field, value)
+    # Re-embed when content changes
+    if body.content is not None:
+        entry.embedding = try_embed(body.content)
     db.commit()
     db.refresh(entry)
     return entry

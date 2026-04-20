@@ -8,13 +8,27 @@ from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.comment import Comment
 from app.models.influencer import Influencer
+from app.models.knowledge_entry import KnowledgeEntry
 from app.models.pending_response import PendingResponse
 from app.models.social_account import SocialAccount
 from app.models.user import User
 from app.schemas.response import ApproveRequest, PendingResponseOut
 from app.utils.rate_limit import limiter
+from app.core.personality._embed import try_embed
 
 router = APIRouter(prefix="/responses", tags=["responses"])
+
+
+def _save_voice_example(db: Session, influencer_id: UUID, comment: Comment, response_text: str) -> None:
+    """Persist an approved/edited response as a voice_examples knowledge entry."""
+    content = f"Comment: {comment.content}\nResponse: {response_text}"
+    entry = KnowledgeEntry(
+        influencer_id=influencer_id,
+        category="voice_examples",
+        content=content,
+        embedding=try_embed(content),
+    )
+    db.add(entry)
 
 
 def _enrich(resp: PendingResponse, db: Session) -> PendingResponseOut:
@@ -105,6 +119,11 @@ async def approve_response(
     resp.approved_at = datetime.now(timezone.utc)
     resp.platform_reply_id = platform_reply_id
     resp.published_at = published_at
+
+    # Feedback loop: save as voice_examples to improve future RAG results
+    if comment:
+        _save_voice_example(db, influencer_id=resp.influencer_id, comment=comment, response_text=final_text)
+
     db.commit()
     db.refresh(resp)
     return resp

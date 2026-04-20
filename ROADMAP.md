@@ -189,11 +189,11 @@
 
 | # | Task | Description | Complexity | Status |
 |---|------|-------------|------------|--------|
-| 1 | Enable pgvector on Railway | `CREATE EXTENSION vector;` on production DB | 🟢 | ⬜ Pending |
-| 2 | Embedding generation | Generate and store embeddings when saving knowledge entries (Gemini embeddings API) | 🟡 | ⬜ Pending |
-| 3 | RAG search (`rag.py`) | Cosine similarity over `knowledge_entries.embedding` — top-k fragments | 🟡 | ⬜ Pending |
-| 4 | RAG integration | Inject retrieved fragments into Personality Engine prompt | 🟢 | ⬜ Pending |
-| 5 | Feedback loop | Approved/edited responses saved as `voice_examples` to improve future prompts | 🟡 | ⬜ Pending |
+| 1 | Enable pgvector on Railway | `CREATE EXTENSION vector;` on production DB | 🟢 | ✅ Done |
+| 2 | Embedding generation | `_embed.py` — Gemini text-embedding-004, 768 dims; hooked into knowledge CRUD | 🟡 | ✅ Done |
+| 3 | RAG search (`rag.py`) | Cosine similarity via pgvector; graceful fallback to recency order | 🟡 | ✅ Done |
+| 4 | RAG integration | Fragments injected into Personality Engine via `prompt_builder.py` | 🟢 | ✅ Done |
+| 5 | Feedback loop | Approved/edited responses saved as `voice_examples` on approve | 🟡 | ✅ Done |
 | 6 | Full multi-influencer | Webhook routing by social account → influencer; per-influencer filters in UI | 🟡 | ⬜ Pending |
 
 ---
