@@ -5,6 +5,7 @@ import type { Influencer } from "@/types/api";
 interface InfluencerCardProps {
   influencer: Influencer;
   onEdit: (influencer: Influencer) => void;
+  onManageAccounts?: (influencer: Influencer) => void;
 }
 
 const PROVIDER_LABELS: Record<string, string> = {
@@ -17,7 +18,7 @@ const PROVIDER_LABELS: Record<string, string> = {
   ollama: "Ollama",
 };
 
-export default function InfluencerCard({ influencer, onEdit }: InfluencerCardProps) {
+export default function InfluencerCard({ influencer, onEdit, onManageAccounts }: InfluencerCardProps) {
   const provider = influencer.llm_provider
     ? (PROVIDER_LABELS[influencer.llm_provider] ?? influencer.llm_provider)
     : "Default";
@@ -47,12 +48,23 @@ export default function InfluencerCard({ influencer, onEdit }: InfluencerCardPro
           <p className="text-xs text-gray-400 font-mono">/{influencer.slug}</p>
         </div>
 
-        <button
-          onClick={() => onEdit(influencer)}
-          className="shrink-0 text-xs text-gray-400 hover:text-brand transition-colors px-2 py-1 rounded-lg hover:bg-brand-50 dark:hover:bg-violet-950"
-        >
-          Editar
-        </button>
+        <div className="flex items-center gap-1 shrink-0">
+          {onManageAccounts && (
+            <button
+              onClick={() => onManageAccounts(influencer)}
+              className="text-xs text-gray-400 hover:text-brand transition-colors px-2 py-1 rounded-lg hover:bg-brand-50 dark:hover:bg-violet-950"
+              title="Gestionar redes sociales"
+            >
+              Redes
+            </button>
+          )}
+          <button
+            onClick={() => onEdit(influencer)}
+            className="text-xs text-gray-400 hover:text-brand transition-colors px-2 py-1 rounded-lg hover:bg-brand-50 dark:hover:bg-violet-950"
+          >
+            Editar
+          </button>
+        </div>
       </div>
 
       <div className="flex items-center gap-2">

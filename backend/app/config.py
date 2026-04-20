@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     meta_app_id: str = ""
     meta_app_secret: str = ""
     meta_webhook_verify_token: str = ""
+    meta_oauth_redirect_uri: str = ""
 
     class Config:
         env_file = ".env"
