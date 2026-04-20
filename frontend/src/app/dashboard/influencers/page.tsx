@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import InfluencerCard from "@/components/influencers/InfluencerCard";
 import InfluencerForm from "@/components/influencers/InfluencerForm";
+import InfluencerOnboarding from "@/components/influencers/InfluencerOnboarding";
 import SocialAccountsList from "@/components/influencers/SocialAccountsList";
 import type { Influencer } from "@/types/api";
 
@@ -156,19 +157,38 @@ export default function InfluencersPage() {
         ))}
       </div>
 
-      {/* Create / Edit modal */}
-      {(modal.type === "create" || modal.type === "edit") && token && (
+      {/* Create modal — onboarding wizard */}
+      {modal.type === "create" && token && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setModal({ type: "closed" })} />
+          <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="px-6 pt-6 pb-2">
+              <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Nuevo influencer</h2>
+            </div>
+            <div className="px-6 pb-6 pt-4">
+              <InfluencerOnboarding
+                token={token}
+                onDone={handleSaved}
+                onCancel={() => setModal({ type: "closed" })}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit modal */}
+      {modal.type === "edit" && token && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={() => setModal({ type: "closed" })} />
           <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="px-6 pt-6 pb-2">
               <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                {modal.type === "create" ? "Nuevo influencer" : `Editar · ${modal.influencer.name}`}
+                Editar · {modal.influencer.name}
               </h2>
             </div>
             <div className="px-6 pb-6 pt-4">
               <InfluencerForm
-                influencer={modal.type === "edit" ? modal.influencer : undefined}
+                influencer={modal.influencer}
                 token={token}
                 onSaved={handleSaved}
                 onCancel={() => setModal({ type: "closed" })}
