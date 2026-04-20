@@ -173,13 +173,13 @@
 | 2 | Add / edit / delete entries | CRUD UI for knowledge entries | 🟢 | ✅ Done |
 | 3 | Category tags | biography, opinions, voice_examples, off_limits, etc. | 🟢 | ✅ Done |
 
-#### 2.5 — Frontend Tests ⬜
+#### 2.5 — Frontend Tests ✅
 
 | # | Task | Description | Complexity | Status |
 |---|------|-------------|------------|--------|
-| 1 | Unit tests — components | ApprovalCard, Sidebar, auth pages | 🟡 | ⬜ Pending |
-| 2 | E2E — login flow | Login with credentials + Google SSO | 🟡 | ⬜ Pending |
-| 3 | E2E — approve response flow | Full cycle: queue → approve → confirm published | 🔴 | ⬜ Pending |
+| 1 | Unit tests — components | ApprovalCard (13), InfluencerCard (7), KnowledgeEntryRow (8) — 28 tests total | 🟡 | ✅ Done |
+| 2 | E2E — login flow | Login with credentials, invalid creds, redirect, unauthenticated access | 🟡 | ✅ Done |
+| 3 | E2E — approve response flow | Queue load, approve/ignore removes card, influencer filter | 🔴 | ✅ Done |
 
 ---
 
