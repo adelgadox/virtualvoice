@@ -14,6 +14,16 @@ export interface PendingResponse {
   comment_author: string | null;
 }
 
+export interface KnowledgeEntry {
+  id: string;
+  influencer_id: string;
+  category: string;
+  content: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string | null;
+}
+
 export interface Influencer {
   id: string;
   name: string;
