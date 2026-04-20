@@ -203,6 +203,9 @@ class TestResponsesEndpoints:
         r.platform_reply_id = None
         r.created_at = datetime.now(timezone.utc)
         r.updated_at = None
+        # denormalized comment fields added to PendingResponseOut
+        r.comment_content = None
+        r.comment_author = None
         return r
 
     def test_ignore_response_sets_status_ignored(self):
