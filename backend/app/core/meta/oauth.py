@@ -96,7 +96,7 @@ async def get_instagram_accounts(user_token: str) -> list[dict]:
             # Get username for display
             ig_resp = await client.get(
                 f"{_GRAPH}/{ig_id}",
-                params={"fields": "id,username", "access_token": page["access_token"]},
+                params={"fields": "id,username,profile_picture_url", "access_token": page["access_token"]},
             )
             if ig_resp.status_code != 200:
                 continue
@@ -105,6 +105,7 @@ async def get_instagram_accounts(user_token: str) -> list[dict]:
                 "account_id": ig_id,
                 "page_id": page["id"],
                 "username": ig_data.get("username", ""),
+                "profile_picture_url": ig_data.get("profile_picture_url"),
                 "page_access_token": page["access_token"],
             })
 

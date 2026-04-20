@@ -31,6 +31,7 @@ export interface SocialAccount {
   account_id: string;
   page_id: string | null;
   username: string | null;
+  profile_picture_url: string | null;
   is_active: boolean;
   created_at: string;
 }
