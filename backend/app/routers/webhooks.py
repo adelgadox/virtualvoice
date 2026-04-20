@@ -16,10 +16,12 @@ router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 
 def _verify_meta_signature(body: bytes, signature_header: str | None) -> bool:
     if not signature_header or not settings.meta_app_secret:
+        logger.warning("Missing signature header or app secret (header=%s, secret_len=%d)", signature_header, len(settings.meta_app_secret))
         return False
     expected = "sha256=" + hmac.new(
         settings.meta_app_secret.encode(), body, hashlib.sha256
     ).hexdigest()
+    logger.warning("Signature check — expected=%s received=%s", expected, signature_header)
     return hmac.compare_digest(expected, signature_header)
 
 
