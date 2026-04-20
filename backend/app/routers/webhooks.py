@@ -21,7 +21,7 @@ def _verify_meta_signature(body: bytes, signature_header: str | None) -> bool:
     expected = "sha256=" + hmac.new(
         settings.meta_app_secret.encode(), body, hashlib.sha256
     ).hexdigest()
-    logger.warning("Signature check — expected=%s received=%s", expected, signature_header)
+    logger.warning("Signature check — secret_repr=%r expected=%s received=%s", settings.meta_app_secret[:8], expected, signature_header)
     return hmac.compare_digest(expected, signature_header)
 
 
