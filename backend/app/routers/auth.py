@@ -1,4 +1,5 @@
 import logging
+import uuid
 from datetime import datetime, timedelta, timezone
 
 import bcrypt
@@ -8,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
+from app.models.token_denylist import TokenDenylist
 from app.models.user import User
 from app.schemas.auth import (
     GoogleAuthRequest,
@@ -33,7 +35,12 @@ def _verify_password(plain: str, hashed: str) -> bool:
 
 def _create_token(user_id: str) -> str:
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.access_token_expire_minutes)
-    return jwt.encode({"sub": user_id, "exp": expire}, settings.secret_key, algorithm=settings.algorithm)
+    payload = {
+        "sub": user_id,
+        "exp": expire,
+        "jti": str(uuid.uuid4()),  # unique token ID — used for revocation
+    }
+    return jwt.encode(payload, settings.secret_key, algorithm=settings.algorithm)
 
 
 def _verify_google_id_token(id_token_str: str) -> dict:
@@ -144,3 +151,25 @@ def google_auth(request: Request, body: GoogleAuthRequest, db: Session = Depends
 @limiter.limit("60/minute")
 def me(request: Request, current_user: User = Depends(get_current_user)):
     return current_user
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit("20/minute")
+def logout(request: Request, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Revoke the current JWT by adding its jti to the denylist."""
+    from fastapi.security import OAuth2PasswordBearer
+    from fastapi import Security
+    import jwt as _jwt
+
+    auth_header = request.headers.get("Authorization", "")
+    token = auth_header.removeprefix("Bearer ").strip()
+    try:
+        payload = _jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
+        jti: str | None = payload.get("jti")
+        exp: int | None = payload.get("exp")
+        if jti and exp:
+            expires_at = datetime.fromtimestamp(exp, tz=timezone.utc)
+            db.add(TokenDenylist(jti=jti, expires_at=expires_at))
+            db.commit()
+    except _jwt.PyJWTError:
+        pass  # Token already invalid — nothing to revoke

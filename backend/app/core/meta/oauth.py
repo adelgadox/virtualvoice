@@ -112,16 +112,17 @@ async def get_instagram_accounts(user_token: str) -> list[dict]:
     return accounts
 
 
+def _state_secret() -> bytes:
+    """Return the dedicated OAuth state secret, falling back to the JWT secret if unset."""
+    return (settings.meta_oauth_state_secret or settings.secret_key).encode()
+
+
 def verify_state(state: str, expected_hmac: str) -> bool:
     """Verify the OAuth state parameter hasn't been tampered with."""
-    computed = hmac.new(
-        settings.secret_key.encode(), state.encode(), hashlib.sha256
-    ).hexdigest()
+    computed = hmac.new(_state_secret(), state.encode(), hashlib.sha256).hexdigest()
     return hmac.compare_digest(computed, expected_hmac)
 
 
 def sign_state(state: str) -> str:
     """Sign the OAuth state parameter."""
-    return hmac.new(
-        settings.secret_key.encode(), state.encode(), hashlib.sha256
-    ).hexdigest()
+    return hmac.new(_state_secret(), state.encode(), hashlib.sha256).hexdigest()

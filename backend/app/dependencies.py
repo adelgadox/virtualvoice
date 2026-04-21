@@ -5,6 +5,7 @@ import jwt
 
 from app.database import get_db
 from app.config import settings
+from app.models.token_denylist import TokenDenylist
 from app.models.user import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -19,9 +20,14 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
         user_id: str = payload.get("sub")
+        jti: str | None = payload.get("jti")
         if user_id is None:
             raise credentials_exception
     except jwt.PyJWTError:
+        raise credentials_exception
+
+    # Reject revoked tokens
+    if jti and db.query(TokenDenylist).filter(TokenDenylist.jti == jti).first():
         raise credentials_exception
 
     user = db.query(User).filter(User.id == user_id, User.is_active == True).first()  # noqa: E712

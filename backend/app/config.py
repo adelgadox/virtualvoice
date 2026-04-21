@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     # JWT
     secret_key: str
     algorithm: str = "HS256"
-    access_token_expire_minutes: int = 60 * 24 * 7  # 7 days
+    access_token_expire_minutes: int = 60  # 1 hour — use refresh or re-login for longer sessions
 
     # Registration
     registration_enabled: bool = True
@@ -38,6 +38,7 @@ class Settings(BaseSettings):
     meta_app_secret: str = ""
     meta_webhook_verify_token: str = ""
     meta_oauth_redirect_uri: str = ""
+    meta_oauth_state_secret: str = ""  # Dedicated HMAC secret for OAuth state — falls back to secret_key if unset
 
     class Config:
         env_file = ".env"

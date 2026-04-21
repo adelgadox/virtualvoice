@@ -306,9 +306,9 @@
 | 1 | Restrict user registration | `POST /auth/register` is fully public — any user can register and immediately approve/publish responses. Add admin-controlled allow-list or invite token | 🟢 | ✅ Done |
 | 2 | Add admin guards to destructive endpoints | `DELETE /social-accounts/{id}`, `PATCH/DELETE /knowledge/{id}` — all lack ownership checks (IDOR). Require `is_admin=True` | 🟢 | ✅ Done |
 | 3 | Derive `approved_by` from session | Currently a free-form client-supplied string — attacker can set any value. Use `current_user.email` server-side instead | 🟢 | ✅ Done |
-| 4 | Separate OAuth state secret from JWT secret | `sign_state()` reuses `settings.secret_key`. Add dedicated `META_OAUTH_STATE_SECRET` env var | 🟢 | ⬜ Pending |
-| 5 | Frontend security headers (CSP + HSTS) | `next.config.ts` has no `Content-Security-Policy`, `Strict-Transport-Security`, or `Permissions-Policy`. Port from bioflow `next.config.ts` | 🟡 | ⬜ Pending |
-| 6 | Reduce JWT lifetime + add token revocation | JWT expires in 7 days with no revocation. Reduce to 1h + add `token_denylist` table. Port from bioflow `token_denylist.py` | 🔴 | ⬜ Pending |
+| 4 | Separate OAuth state secret from JWT secret | `sign_state()` reuses `settings.secret_key`. Add dedicated `META_OAUTH_STATE_SECRET` env var | 🟢 | ✅ Done |
+| 5 | Frontend security headers (CSP + HSTS) | `next.config.ts` has no `Content-Security-Policy`, `Strict-Transport-Security`, or `Permissions-Policy`. Port from bioflow `next.config.ts` | 🟡 | ✅ Done |
+| 6 | Reduce JWT lifetime + add token revocation | JWT expires in 7 days with no revocation. Reduce to 1h + add `token_denylist` table. Port from bioflow `token_denylist.py` | 🔴 | ✅ Done |
 
 #### 6.3 — Medium
 
