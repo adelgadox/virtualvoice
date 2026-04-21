@@ -52,7 +52,7 @@ def list_pending(
     query = db.query(PendingResponse).filter(PendingResponse.status == "pending")
     if influencer_id:
         query = query.filter(PendingResponse.influencer_id == influencer_id)
-    rows = query.order_by(PendingResponse.created_at.asc()).all()
+    rows = query.order_by(PendingResponse.created_at.asc()).limit(200).all()
     return [_enrich(r, db) for r in rows]
 
 

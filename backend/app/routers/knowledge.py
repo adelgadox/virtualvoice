@@ -30,7 +30,7 @@ def list_entries(
         query = query.filter(KnowledgeEntry.influencer_id == influencer_id)
     if category:
         query = query.filter(KnowledgeEntry.category == category)
-    return query.order_by(KnowledgeEntry.created_at.desc()).all()
+    return query.order_by(KnowledgeEntry.created_at.desc()).limit(200).all()
 
 
 @router.post("/", response_model=KnowledgeEntryOut, status_code=status.HTTP_201_CREATED)

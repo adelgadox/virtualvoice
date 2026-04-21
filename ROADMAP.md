@@ -314,13 +314,13 @@
 
 | # | Task | Description | Complexity | Status |
 |---|------|-------------|------------|--------|
-| 1 | Fix rate limiter IP extraction | `get_client_ip()` reads raw `X-Forwarded-For` — spoofable. Use `request.client.host` (already resolved by `ProxyHeadersMiddleware`) | 🟢 | ⬜ Pending |
+| 1 | Fix rate limiter IP extraction | `get_client_ip()` reads raw `X-Forwarded-For` — spoofable. Use `request.client.host` (already resolved by `ProxyHeadersMiddleware`) | 🟢 | ✅ Done |
 | 2 | Encrypt Meta access tokens at rest | `social_accounts.access_token` is plaintext in DB. Use Fernet or KMS; decrypt only at point of use | 🔴 | ⬜ Pending |
 | 3 | URL-encode OAuth error redirect param | `oauth_error` value reflected unencoded into redirect URL. Apply `urllib.parse.quote(error, safe='')` | 🟢 | ✅ Done |
-| 4 | Add pagination to unbounded list endpoints | `GET /responses/pending`, `/knowledge/`, `/social-accounts/`, `/influencers/` have no `LIMIT` — add `.limit(200)` | 🟢 | ⬜ Pending |
-| 5 | Add production debug guard | Add startup assertion: `DEBUG` must be `false` when `RAILWAY_ENVIRONMENT=production` | 🟢 | ⬜ Pending |
-| 6 | Fix inconsistent API URL fallback | `frontend/src/app/(auth)/register/page.tsx` hardcodes `localhost:8001` while `lib/api.ts` uses `localhost:8000` | 🟢 | ⬜ Pending |
-| 7 | Port input sanitization utilities from bioflow | Add `sanitize.py` (`strip_html`, `validate_slug`, `validate_url_scheme`) and apply to user-facing string fields | 🟡 | ⬜ Pending |
+| 4 | Add pagination to unbounded list endpoints | `GET /responses/pending`, `/knowledge/`, `/social-accounts/`, `/influencers/` have no `LIMIT` — add `.limit(200)` | 🟢 | ✅ Done |
+| 5 | Add production debug guard | Add startup assertion: `DEBUG` must be `false` when `RAILWAY_ENVIRONMENT=production` | 🟢 | ✅ Done |
+| 6 | Fix inconsistent API URL fallback | `frontend/src/app/(auth)/register/page.tsx` hardcodes `localhost:8001` while `lib/api.ts` uses `localhost:8000` | 🟢 | ✅ Done |
+| 7 | Port input sanitization utilities from bioflow | Add `sanitize.py` (`strip_html`, `validate_slug`) and apply to influencer and knowledge entry schemas | 🟡 | ✅ Done |
 
 #### 6.4 — Low / Housekeeping
 
