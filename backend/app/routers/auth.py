@@ -65,31 +65,51 @@ def login(request: Request, body: LoginRequest, db: Session = Depends(get_db)):
 @router.post("/google", response_model=TokenOut)
 @limiter.limit("20/minute")
 def google_auth(request: Request, body: GoogleAuthRequest, db: Session = Depends(get_db)):
+    # Verify the Google ID token server-side — never trust client-supplied identity claims
+    try:
+        from google.oauth2 import id_token as google_id_token
+        from google.auth.transport import requests as google_requests
+
+        idinfo = google_id_token.verify_oauth2_token(
+            body.id_token,
+            google_requests.Request(),
+            settings.google_client_id,
+        )
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Google token",
+        )
+
+    google_id: str = idinfo["sub"]
+    email: str = idinfo["email"]
+    full_name: str | None = idinfo.get("name")
+    avatar_url: str | None = idinfo.get("picture")
+
     # Find existing user by google_id or email
-    user = db.query(User).filter(User.google_id == body.google_id).first()
+    user = db.query(User).filter(User.google_id == google_id).first()
 
     if not user:
-        user = db.query(User).filter(User.email == body.email).first()
+        user = db.query(User).filter(User.email == email).first()
 
     if user:
-        # Update Google fields if missing
         changed = False
         if not user.google_id:
-            user.google_id = body.google_id
+            user.google_id = google_id
             user.auth_provider = "google"
             changed = True
-        if body.avatar_url and not user.avatar_url:
-            user.avatar_url = body.avatar_url
+        if avatar_url and not user.avatar_url:
+            user.avatar_url = avatar_url
             changed = True
         if changed:
             db.commit()
             db.refresh(user)
     else:
         user = User(
-            email=body.email,
-            full_name=body.full_name,
-            avatar_url=body.avatar_url,
-            google_id=body.google_id,
+            email=email,
+            full_name=full_name,
+            avatar_url=avatar_url,
+            google_id=google_id,
             auth_provider="google",
         )
         db.add(user)

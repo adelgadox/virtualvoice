@@ -43,12 +43,9 @@ async def meta_webhook_event(request: Request, db: Session = Depends(get_db)):
     body = await request.body()
     signature = request.headers.get("X-Hub-Signature-256")
 
-    # Signature verification is bypassed: GZipMiddleware decompresses the request body
-    # before it reaches this handler, making the raw bytes differ from what Meta signed.
-    # TODO: move signature check to a middleware that runs before decompression, or
-    # disable GZipMiddleware for this route.
     if not _verify_meta_signature(body, signature):
-        logger.info("Meta webhook signature mismatch (GZip middleware likely cause) — processing anyway")
+        logger.warning("Invalid Meta webhook signature — rejecting request")
+        raise HTTPException(status_code=403, detail="Invalid signature")
 
     payload = await request.json()
     await handle_meta_webhook(payload, db)

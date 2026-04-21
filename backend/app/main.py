@@ -12,6 +12,25 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.gzip import GZipMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
+# Paths that must NOT be GZip-decompressed so HMAC signature checks work on raw bytes
+_GZIP_EXCLUDE_PREFIXES = ("/webhooks/",)
+
+
+class SelectiveGZipMiddleware:
+    """GZipMiddleware that skips compression/decompression for excluded paths."""
+
+    def __init__(self, app, minimum_size: int = 1000):
+        self._gzip = GZipMiddleware(app, minimum_size=minimum_size)
+        self._app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http" and any(
+            scope.get("path", "").startswith(p) for p in _GZIP_EXCLUDE_PREFIXES
+        ):
+            await self._app(scope, receive, send)
+        else:
+            await self._gzip(scope, receive, send)
+
 from app.config import settings
 
 logging.basicConfig(
@@ -65,7 +84,7 @@ if settings.debug:
 
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-app.add_middleware(GZipMiddleware, minimum_size=1000)
+app.add_middleware(SelectiveGZipMiddleware, minimum_size=1000)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=settings.trusted_proxy_ips)
 

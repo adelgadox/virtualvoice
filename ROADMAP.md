@@ -248,9 +248,9 @@
 
 | # | Task | Description | Complexity | Status |
 |---|------|-------------|------------|--------|
-| 1 | Fix webhook signature verification | Exclude `/webhooks/meta` from `GZipMiddleware` so HMAC runs on raw bytes — currently ANY caller can POST spoofed webhooks | 🟡 | ⬜ Pending |
-| 2 | Verify Google ID token server-side | `POST /auth/google` trusts unverified `google_id`/`email` from request body — anyone can impersonate any user. Replace with `id_token.verify_oauth2_token()` | 🟡 | ⬜ Pending |
-| 3 | Bind OAuth callback to initiating session | Instagram callback is not tied to the user who started the flow. Embed `user_id` in state + add `get_current_user` dependency to the callback endpoint | 🟡 | ⬜ Pending |
+| 1 | Fix webhook signature verification | Exclude `/webhooks/meta` from `GZipMiddleware` so HMAC runs on raw bytes — currently ANY caller can POST spoofed webhooks | 🟡 | ✅ Done |
+| 2 | Verify Google ID token server-side | `POST /auth/google` trusts unverified `google_id`/`email` from request body — anyone can impersonate any user. Replace with `id_token.verify_oauth2_token()` | 🟡 | ✅ Done |
+| 3 | Bind OAuth callback to initiating session | Instagram callback is not tied to the user who started the flow. Embed `user_id` in state + add `get_current_user` dependency to the callback endpoint | 🟡 | ✅ Done |
 
 #### 6.2 — High
 
@@ -269,7 +269,7 @@
 |---|------|-------------|------------|--------|
 | 1 | Fix rate limiter IP extraction | `get_client_ip()` reads raw `X-Forwarded-For` — spoofable. Use `request.client.host` (already resolved by `ProxyHeadersMiddleware`) | 🟢 | ⬜ Pending |
 | 2 | Encrypt Meta access tokens at rest | `social_accounts.access_token` is plaintext in DB. Use Fernet or KMS; decrypt only at point of use | 🔴 | ⬜ Pending |
-| 3 | URL-encode OAuth error redirect param | `oauth_error` value reflected unencoded into redirect URL. Apply `urllib.parse.quote(error, safe='')` | 🟢 | ⬜ Pending |
+| 3 | URL-encode OAuth error redirect param | `oauth_error` value reflected unencoded into redirect URL. Apply `urllib.parse.quote(error, safe='')` | 🟢 | ✅ Done |
 | 4 | Add pagination to unbounded list endpoints | `GET /responses/pending`, `/knowledge/`, `/social-accounts/`, `/influencers/` have no `LIMIT` — add `.limit(200)` | 🟢 | ⬜ Pending |
 | 5 | Add production debug guard | Add startup assertion: `DEBUG` must be `false` when `RAILWAY_ENVIRONMENT=production` | 🟢 | ⬜ Pending |
 | 6 | Fix inconsistent API URL fallback | `frontend/src/app/(auth)/register/page.tsx` hardcodes `localhost:8001` while `lib/api.ts` uses `localhost:8000` | 🟢 | ⬜ Pending |
