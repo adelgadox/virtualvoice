@@ -44,16 +44,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async signIn({ user, account, profile }) {
       // For Google SSO: sync user with backend
-      if (account?.provider === "google" && profile) {
+      if (account?.provider === "google" && account.id_token) {
         const res = await fetch(`${API_URL}/auth/google`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            google_id: profile.sub,
-            email: profile.email,
-            full_name: profile.name,
-            avatar_url: profile.picture,
-          }),
+          // Forward the raw Google ID token — verified server-side by FastAPI
+          body: JSON.stringify({ id_token: account.id_token }),
         });
 
         if (!res.ok) return false;

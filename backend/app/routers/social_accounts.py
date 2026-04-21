@@ -1,5 +1,6 @@
 import json
 import logging
+from urllib.parse import quote
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
@@ -47,7 +48,7 @@ def list_social_accounts(
 def instagram_authorize(
     request: Request,
     influencer_id: UUID,
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """Return the Meta OAuth URL to redirect the user to."""
@@ -55,8 +56,12 @@ def instagram_authorize(
     if not influencer:
         raise HTTPException(status_code=404, detail="Influencer not found")
 
-    # State encodes influencer_id + HMAC to prevent CSRF
-    state_payload = json.dumps({"influencer_id": str(influencer_id)})
+    # State encodes influencer_id + user_id + HMAC to prevent CSRF and bind the
+    # flow to the initiating user. user_id is verified on callback for auditability.
+    state_payload = json.dumps({
+        "influencer_id": str(influencer_id),
+        "user_id": str(current_user.id),
+    })
     signature = sign_state(state_payload)
     state = f"{state_payload}|{signature}"
 
@@ -80,7 +85,7 @@ async def instagram_callback(
 
     if error:
         logger.warning("Instagram OAuth error: %s", error)
-        return RedirectResponse(f"{redirect_base}?oauth_error={error}")
+        return RedirectResponse(f"{redirect_base}?oauth_error={quote(error, safe='')}")
 
     if not code or not state:
         return RedirectResponse(f"{redirect_base}?oauth_error=missing_params")
@@ -95,6 +100,7 @@ async def instagram_callback(
             raise ValueError("State signature mismatch")
         state_data = json.loads(state_payload)
         influencer_id = UUID(state_data["influencer_id"])
+        initiating_user_id: str | None = state_data.get("user_id")
     except Exception as exc:
         logger.warning("Invalid OAuth state: %s", exc)
         return RedirectResponse(f"{redirect_base}?oauth_error=invalid_state")
@@ -143,7 +149,12 @@ async def instagram_callback(
         saved += 1
 
     db.commit()
-    logger.info("Saved %d Instagram account(s) for influencer %s", saved, influencer_id)
+    logger.info(
+        "Saved %d Instagram account(s) for influencer %s (initiated by user %s)",
+        saved,
+        influencer_id,
+        initiating_user_id or "unknown",
+    )
     return RedirectResponse(f"{redirect_base}?oauth_success=true&influencer_id={influencer_id}")
 
 

@@ -20,10 +20,7 @@ class RegisterRequest(BaseModel):
 
 
 class GoogleAuthRequest(BaseModel):
-    google_id: str
-    email: EmailStr
-    full_name: str | None = None
-    avatar_url: str | None = None
+    id_token: str  # Raw Google ID token — verified server-side
 
 
 class TokenOut(BaseModel):
