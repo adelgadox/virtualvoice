@@ -75,7 +75,7 @@ export default function InfluencerForm({ influencer, token, onSaved, onCancel }:
       }
       onSaved(saved);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Error al guardar");
+      setError(err instanceof Error ? err.message : "Failed to save");
     } finally {
       setSaving(false);
     }
@@ -89,13 +89,13 @@ export default function InfluencerForm({ influencer, token, onSaved, onCancel }:
       {/* Name */}
       <div className="space-y-1">
         <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-          Nombre
+          Name
         </label>
         <input
           value={name}
           onChange={(e) => handleNameChange(e.target.value)}
           required
-          placeholder="Ej: Luna García"
+          placeholder="e.g. Luna García"
           className="w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand/40"
         />
       </div>
@@ -112,10 +112,10 @@ export default function InfluencerForm({ influencer, token, onSaved, onCancel }:
             required
             placeholder="luna-garcia"
             pattern="[a-z0-9-]+"
-            title="Solo minúsculas, números y guiones"
+            title="Lowercase letters, numbers, and hyphens only"
             className="w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand/40 font-mono"
           />
-          <p className="text-xs text-gray-400">Solo minúsculas, números y guiones. No se puede cambiar después.</p>
+          <p className="text-xs text-gray-400">Lowercase, numbers, and hyphens only. Cannot be changed later.</p>
         </div>
       )}
 
@@ -150,11 +150,11 @@ export default function InfluencerForm({ influencer, token, onSaved, onCancel }:
           onChange={(e) => setPrompt(e.target.value)}
           rows={10}
           maxLength={PROMPT_MAX}
-          placeholder="Eres Luna García, una influencer de lifestyle en CDMX. Respondes siempre en español, con tono cercano y auténtico..."
+          placeholder="You are Luna García, a lifestyle influencer based in Mexico City. You always respond in Spanish, with a warm and authentic tone…"
           className="w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 resize-y focus:outline-none focus:ring-2 focus:ring-brand/40 font-mono leading-relaxed"
         />
         <p className="text-xs text-gray-400">
-          Define la personalidad, tono y restricciones del influencer. Este prompt se inyecta en cada respuesta generada.
+          Defines the personality, tone, and restrictions for this influencer. Injected into every generated response.
         </p>
       </div>
 
@@ -162,7 +162,7 @@ export default function InfluencerForm({ influencer, token, onSaved, onCancel }:
       <div className="space-y-1">
         <div className="flex items-center justify-between">
           <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-            Contexto situacional
+            Situational context
           </label>
           <span className={`text-xs tabular-nums ${currentContext.length > CONTEXT_MAX * 0.85 ? "text-amber-500" : "text-gray-400"}`}>
             {currentContext.length} / {CONTEXT_MAX}
@@ -173,11 +173,11 @@ export default function InfluencerForm({ influencer, token, onSaved, onCancel }:
           onChange={(e) => setCurrentContext(e.target.value)}
           rows={3}
           maxLength={CONTEXT_MAX}
-          placeholder="Ej: Esta semana estoy en vacaciones en Ibiza, humor relajado y playero. Acabo de lanzar mi nueva colección de verano."
+          placeholder="e.g. This week I'm on vacation in Ibiza, relaxed beach mood. Just launched my new summer collection."
           className="w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 resize-y focus:outline-none focus:ring-2 focus:ring-brand/40 leading-relaxed"
         />
         <p className="text-xs text-gray-400">
-          Nota libre sobre el estado actual del influencer. Se inyecta en cada prompt junto con la fecha de hoy y los posts recientes de Instagram.
+          Free-form note about the influencer's current state. Injected into each prompt alongside today's date and recent Instagram posts.
         </p>
       </div>
 
@@ -195,7 +195,7 @@ export default function InfluencerForm({ influencer, token, onSaved, onCancel }:
           disabled={saving}
           className="flex-1 bg-brand text-white text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-brand-dark transition-colors disabled:opacity-50"
         >
-          {saving ? "Guardando…" : isEdit ? "Guardar cambios" : "Crear influencer"}
+          {saving ? "Saving…" : isEdit ? "Save changes" : "Create influencer"}
         </button>
         <button
           type="button"
@@ -203,7 +203,7 @@ export default function InfluencerForm({ influencer, token, onSaved, onCancel }:
           disabled={saving}
           className="px-4 py-2.5 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
         >
-          Cancelar
+          Cancel
         </button>
       </div>
     </form>

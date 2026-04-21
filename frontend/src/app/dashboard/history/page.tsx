@@ -7,22 +7,22 @@ import type { Influencer, PendingResponse } from "@/types/api";
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   approved: {
-    label: "Aprobada",
+    label: "Approved",
     className: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400",
   },
   edited: {
-    label: "Editada",
+    label: "Edited",
     className: "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400",
   },
   ignored: {
-    label: "Ignorada",
+    label: "Ignored",
     className: "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400",
   },
 };
 
 function formatDate(iso: string | null): string {
   if (!iso) return "—";
-  return new Intl.DateTimeFormat("es", {
+  return new Intl.DateTimeFormat("en", {
     day: "numeric",
     month: "short",
     hour: "2-digit",
@@ -53,7 +53,7 @@ function HistoryCard({ response, influencerName }: { response: PendingResponse; 
             </span>
             {response.published_at && (
               <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-400">
-                Publicada
+                Published
               </span>
             )}
           </div>
@@ -68,7 +68,7 @@ function HistoryCard({ response, influencerName }: { response: PendingResponse; 
       {response.comment_content && (
         <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg px-3 py-2">
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">
-            {response.comment_author ? `@${response.comment_author}` : "Comentario"}
+            {response.comment_author ? `@${response.comment_author}` : "Comment"}
           </p>
           <p className="text-xs text-gray-700 dark:text-gray-300 line-clamp-2">
             {response.comment_content}
@@ -88,7 +88,7 @@ function HistoryCard({ response, influencerName }: { response: PendingResponse; 
         )}
         <div>
           {wasEdited && (
-            <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Editada</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Edited</p>
           )}
           <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
             {displayText}
@@ -117,7 +117,7 @@ export default function HistoryPage() {
       setResponses(data);
       setError(null);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Error al cargar el historial");
+      setError(err instanceof Error ? err.message : "Failed to load history");
     }
   }, [token, filterInfluencer]);
 
@@ -145,13 +145,13 @@ export default function HistoryPage() {
       {/* Title + filter */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Historial</h1>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">History</h1>
           {!loading && (
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-              {responses.length} respuesta{responses.length !== 1 ? "s" : ""}
-              {statusCounts.approved ? ` · ${statusCounts.approved} aprobadas` : ""}
-              {statusCounts.edited ? ` · ${statusCounts.edited} editadas` : ""}
-              {statusCounts.ignored ? ` · ${statusCounts.ignored} ignoradas` : ""}
+              {responses.length} {responses.length === 1 ? "response" : "responses"}
+              {statusCounts.approved ? ` · ${statusCounts.approved} approved` : ""}
+              {statusCounts.edited ? ` · ${statusCounts.edited} edited` : ""}
+              {statusCounts.ignored ? ` · ${statusCounts.ignored} ignored` : ""}
             </p>
           )}
         </div>
@@ -162,7 +162,7 @@ export default function HistoryPage() {
             onChange={(e) => setFilterInfluencer(e.target.value)}
             className="text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand/40"
           >
-            <option value="all">Todos los influencers</option>
+            <option value="all">All influencers</option>
             {influencers.map((inf) => (
               <option key={inf.id} value={inf.id}>
                 {inf.name}
@@ -191,7 +191,8 @@ export default function HistoryPage() {
       {/* Error */}
       {error && !loading && (
         <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3">
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          <p className="text-sm font-medium text-red-700 dark:text-red-400">Failed to load history</p>
+          <p className="text-xs text-red-500 dark:text-red-500 mt-0.5">{error}</p>
         </div>
       )}
 
@@ -201,8 +202,8 @@ export default function HistoryPage() {
           <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Sin historial todavía</p>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Las respuestas aprobadas, editadas e ignoradas aparecerán aquí</p>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">No history yet</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Approved, edited, and ignored responses will appear here</p>
         </div>
       )}
 

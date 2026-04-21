@@ -56,7 +56,7 @@ export default function InfluencerCard({ influencer, profilePictureUrl, instagra
                   : "bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500"
               }`}
             >
-              {influencer.is_active ? "Activo" : "Inactivo"}
+              {influencer.is_active ? "Active" : "Inactive"}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -78,16 +78,16 @@ export default function InfluencerCard({ influencer, profilePictureUrl, instagra
             <button
               onClick={() => onManageAccounts(influencer)}
               className="text-xs text-gray-400 hover:text-brand transition-colors px-2 py-1 rounded-lg hover:bg-brand-50 dark:hover:bg-violet-950"
-              title="Gestionar redes sociales"
+              title="Manage social accounts"
             >
-              Redes
+              Accounts
             </button>
           )}
           <button
             onClick={() => onEdit(influencer)}
             className="text-xs text-gray-400 hover:text-brand transition-colors px-2 py-1 rounded-lg hover:bg-brand-50 dark:hover:bg-violet-950"
           >
-            Editar
+            Edit
           </button>
         </div>
       </div>

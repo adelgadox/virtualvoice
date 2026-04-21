@@ -26,7 +26,7 @@ export default function QueuePage() {
       setResponses(data);
       setError(null);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Error al cargar la cola");
+      setError(err instanceof Error ? err.message : "Failed to load the queue");
     }
   }, [token, filterInfluencer]);
 
@@ -59,11 +59,11 @@ export default function QueuePage() {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-            Cola de aprobación
+            Approval Queue
           </h1>
           {!loading && (
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-              {responses.length} {responses.length === 1 ? "respuesta pendiente" : "respuestas pendientes"}
+              {responses.length} {responses.length === 1 ? "pending response" : "pending responses"}
             </p>
           )}
         </div>
@@ -74,7 +74,7 @@ export default function QueuePage() {
             onChange={(e) => setFilterInfluencer(e.target.value)}
             className="text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand/40"
           >
-            <option value="all">Todos los influencers</option>
+            <option value="all">All influencers</option>
             {influencers.map((inf) => (
               <option key={inf.id} value={inf.id}>
                 {inf.name}
@@ -99,7 +99,8 @@ export default function QueuePage() {
 
       {error && !loading && (
         <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3">
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          <p className="text-sm font-medium text-red-700 dark:text-red-400">Failed to load queue</p>
+          <p className="text-xs text-red-500 dark:text-red-500 mt-0.5">{error}</p>
         </div>
       )}
 
@@ -108,8 +109,8 @@ export default function QueuePage() {
           <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
           </svg>
-          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">No hay respuestas pendientes</p>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Se actualiza cada 30 segundos</p>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">All caught up</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">No pending responses · refreshes every 30 seconds</p>
         </div>
       )}
 

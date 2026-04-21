@@ -181,6 +181,14 @@
 | 2 | E2E — login flow | Login with credentials, invalid creds, redirect, unauthenticated access | 🟡 | ✅ Done |
 | 3 | E2E — approve response flow | Queue load, approve/ignore removes card, influencer filter | 🔴 | ✅ Done |
 
+#### 2.6 — UX Polish ✅
+
+| # | Task | Description | Complexity | Status |
+|---|------|-------------|------------|--------|
+| 1 | Translate dashboard to English | All pages, components, labels, and error messages translated from Spanish | 🟢 | ✅ Done |
+| 2 | Robust API error handling | `apiFetch` catches network failures and HTML responses (non-JSON); shows friendly messages instead of raw parse errors | 🟢 | ✅ Done |
+| 3 | Contextual empty states | Knowledge Base shows "Create an influencer first" guidance when no influencers exist instead of a raw API error | 🟢 | ✅ Done |
+
 ---
 
 ### Phase 3 — RAG + Multi-influencer ✅

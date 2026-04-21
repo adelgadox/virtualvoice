@@ -42,7 +42,7 @@ export default function ApprovalCard({
       });
       onDone(response.id);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Error al aprobar");
+      setError(err instanceof Error ? err.message : "Failed to approve");
     } finally {
       setLoading(null);
     }
@@ -58,7 +58,7 @@ export default function ApprovalCard({
       });
       onDone(response.id);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Error al ignorar");
+      setError(err instanceof Error ? err.message : "Failed to ignore");
     } finally {
       setLoading(null);
     }
@@ -76,7 +76,7 @@ export default function ApprovalCard({
       setRegeneratedText(updated.suggested_text);
       setEditText(updated.suggested_text);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Error al regenerar");
+      setError(err instanceof Error ? err.message : "Failed to regenerate");
     } finally {
       setLoading(null);
     }
@@ -99,7 +99,7 @@ export default function ApprovalCard({
       {/* Comment */}
       <div className="space-y-1">
         <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-          Comentario recibido
+          Received comment
           {response.comment_author && (
             <span className="ml-1 normal-case font-normal text-gray-400">
               · @{response.comment_author}
@@ -115,9 +115,9 @@ export default function ApprovalCard({
       <div className="space-y-1">
         <div className="flex items-center justify-between">
           <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-            Respuesta sugerida
+            Suggested response
             {regeneratedText && (
-              <span className="ml-2 text-brand normal-case font-normal">(regenerada)</span>
+              <span className="ml-2 text-brand normal-case font-normal">(regenerated)</span>
             )}
           </p>
           {!editing && (
@@ -129,7 +129,7 @@ export default function ApprovalCard({
               disabled={isLoading}
               className="text-xs text-gray-400 hover:text-brand transition-colors"
             >
-              Editar
+              Edit
             </button>
           )}
         </div>
@@ -146,7 +146,7 @@ export default function ApprovalCard({
               onClick={() => setEditing(false)}
               className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
             >
-              Cancelar edición
+              Cancel edit
             </button>
           </div>
         ) : (
@@ -170,7 +170,7 @@ export default function ApprovalCard({
           disabled={isLoading}
           className="flex-1 min-w-[100px] bg-brand text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-brand-dark transition-colors disabled:opacity-50"
         >
-          {loading === "approve" ? "Aprobando…" : "Aprobar"}
+          {loading === "approve" ? "Approving…" : "Approve"}
         </button>
 
         <button
@@ -178,7 +178,7 @@ export default function ApprovalCard({
           disabled={isLoading}
           className="flex-1 min-w-[100px] border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
         >
-          {loading === "regenerate" ? "Generando…" : "Regenerar"}
+          {loading === "regenerate" ? "Generating…" : "Regenerate"}
         </button>
 
         <button
@@ -186,7 +186,7 @@ export default function ApprovalCard({
           disabled={isLoading}
           className="text-sm text-gray-400 hover:text-red-500 transition-colors px-3 py-2 disabled:opacity-50"
         >
-          {loading === "ignore" ? "…" : "Ignorar"}
+          {loading === "ignore" ? "…" : "Ignore"}
         </button>
       </div>
     </div>
