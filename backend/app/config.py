@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 24 * 7  # 7 days
 
+    # Registration
+    registration_enabled: bool = True
+
     # CORS
     frontend_url: str = "http://localhost:3000"
 

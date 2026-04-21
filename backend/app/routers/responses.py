@@ -77,7 +77,7 @@ async def approve_response(
     response_id: UUID,
     body: ApproveRequest,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     resp = db.query(PendingResponse).filter(
         PendingResponse.id == response_id,
@@ -119,7 +119,7 @@ async def approve_response(
 
     resp.status = new_status
     resp.final_text = final_text
-    resp.approved_by = body.approved_by
+    resp.approved_by = current_user.email
     resp.approved_at = datetime.now(timezone.utc)
     resp.platform_reply_id = platform_reply_id
     resp.published_at = published_at
