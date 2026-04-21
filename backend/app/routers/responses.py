@@ -100,13 +100,17 @@ async def approve_response(
         ).first()
         if social_account and social_account.access_token:
             from app.core.meta.graph_api import publish_reply
+            from app.core.meta.token_manager import get_valid_token, TokenInvalidError
             try:
+                access_token = await get_valid_token(social_account, db)
                 platform_reply_id = await publish_reply(
                     comment_id=comment.platform_comment_id,
                     message=final_text,
-                    access_token=social_account.access_token,
+                    access_token=access_token,
                 )
                 published_at = datetime.now(timezone.utc)
+            except TokenInvalidError as exc:
+                raise HTTPException(status_code=401, detail=str(exc)) from exc
             except Exception as exc:
                 raise HTTPException(
                     status_code=502,

@@ -84,7 +84,7 @@
 | 2 | Comment reception (`POST /webhooks/meta`) | Parse comment payload and trigger Personality Engine | 🟡 | ✅ Done |
 | 3 | Signature verification | `X-Hub-Signature-256` HMAC validation on every request | 🟡 | ✅ Done |
 | 4 | Publish approved response | `POST /{comment-id}/replies` via Meta Graph API (async httpx) | 🟡 | ✅ Done |
-| 5 | Page Access Token manager | `token_manager.py` — store and refresh Page Access Tokens | 🔴 | ⬜ Pending |
+| 5 | Page Access Token manager | `token_manager.py` — store and refresh Page Access Tokens | 🔴 | ✅ Done |
 
 #### 1.6 — REST API Endpoints ✅
 
