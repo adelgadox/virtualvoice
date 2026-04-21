@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta, timezone
 
 import bcrypt
@@ -18,6 +19,7 @@ from app.schemas.auth import (
 from app.dependencies import get_current_user
 from app.utils.rate_limit import limiter
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
@@ -75,7 +77,8 @@ def google_auth(request: Request, body: GoogleAuthRequest, db: Session = Depends
             google_requests.Request(),
             settings.google_client_id,
         )
-    except Exception:
+    except Exception as exc:
+        logger.warning("Google ID token verification failed: %s", exc)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Google token",
