@@ -38,7 +38,7 @@ export default function KnowledgePage() {
     const params = selectedInfluencer !== "all" ? `?influencer_id=${selectedInfluencer}` : "";
     apiFetch<KnowledgeEntry[]>(`/knowledge/${params}`, { token })
       .then(setEntries)
-      .catch((err: unknown) => setError(err instanceof Error ? err.message : "Error al cargar"))
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : "Failed to load"))
       .finally(() => setLoading(false));
   }, [token, selectedInfluencer]);
 
@@ -70,6 +70,9 @@ export default function KnowledgePage() {
   const defaultInfluencerId =
     selectedInfluencer !== "all" ? selectedInfluencer : influencers[0]?.id;
 
+  // If there are no influencers yet, skip the API error and show guidance
+  const noInfluencers = !loading && influencers.length === 0;
+
   return (
     <>
       <div className="space-y-6">
@@ -79,7 +82,7 @@ export default function KnowledgePage() {
             <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Knowledge Base</h1>
             {!loading && (
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                {entries.length} {entries.length === 1 ? "entrada" : "entradas"}
+                {entries.length} {entries.length === 1 ? "entry" : "entries"}
               </p>
             )}
           </div>
@@ -91,7 +94,7 @@ export default function KnowledgePage() {
                 onChange={(e) => setSelectedInfluencer(e.target.value)}
                 className="text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand/40"
               >
-                <option value="all">Todos</option>
+                <option value="all">All influencers</option>
                 {influencers.map((i) => (
                   <option key={i.id} value={i.id}>{i.name}</option>
                 ))}
@@ -105,7 +108,7 @@ export default function KnowledgePage() {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
               </svg>
-              Nueva entrada
+              New entry
             </button>
           </div>
         </div>
@@ -123,23 +126,35 @@ export default function KnowledgePage() {
           </div>
         )}
 
-        {/* Error */}
-        {error && !loading && (
+        {/* Error — only shown when influencers exist (otherwise show guidance below) */}
+        {error && !loading && !noInfluencers && (
           <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3">
-            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <p className="text-sm font-medium text-red-700 dark:text-red-400">Failed to load entries</p>
+            <p className="text-xs text-red-500 dark:text-red-500 mt-0.5">{error}</p>
           </div>
         )}
 
-        {/* Empty state */}
-        {!loading && !error && entries.length === 0 && (
+        {/* No influencers guidance */}
+        {noInfluencers && (
           <div className="text-center py-16">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">No hay entradas en la knowledge base</p>
-            {influencers.length === 0 && (
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Crea un influencer primero</p>
-            )}
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">No knowledge entries yet</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+              Go to <span className="font-medium text-brand">Influencers</span> and create one first
+            </p>
+          </div>
+        )}
+
+        {/* Empty state — influencers exist but no entries */}
+        {!loading && !error && !noInfluencers && entries.length === 0 && (
+          <div className="text-center py-16">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">No entries in the knowledge base</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Add your first entry using the button above</p>
           </div>
         )}
 
@@ -153,7 +168,7 @@ export default function KnowledgePage() {
                   <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                     {inf?.name ?? "Influencer"}
                   </span>
-                  <span className="text-xs text-gray-400">{infEntries.length} entradas</span>
+                  <span className="text-xs text-gray-400">{infEntries.length} {infEntries.length === 1 ? "entry" : "entries"}</span>
                 </div>
                 <button
                   onClick={() => {
@@ -162,7 +177,7 @@ export default function KnowledgePage() {
                   }}
                   className="text-xs text-brand hover:underline"
                 >
-                  + Agregar
+                  + Add
                 </button>
               </div>
               <div className="px-5 divide-y divide-gray-100 dark:divide-gray-800">
@@ -184,7 +199,7 @@ export default function KnowledgePage() {
         {!loading && ungrouped.length > 0 && (
           <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
             <div className="px-5 py-3 border-b border-gray-100 dark:border-gray-800">
-              <span className="text-sm font-semibold text-gray-500">Sin influencer</span>
+              <span className="text-sm font-semibold text-gray-500">No influencer</span>
             </div>
             <div className="px-5">
               {ungrouped.map((entry) => (
@@ -208,7 +223,7 @@ export default function KnowledgePage() {
           <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="px-6 pt-6 pb-2">
               <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                {modal.type === "create" ? "Nueva entrada" : "Editar entrada"}
+                {modal.type === "create" ? "New entry" : "Edit entry"}
               </h2>
             </div>
             <div className="px-6 pb-6 pt-4">

@@ -12,11 +12,24 @@ export async function apiFetch<T>(
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
-  const res = await fetch(`${API_URL}${path}`, { ...init, headers });
+
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}`, { ...init, headers });
+  } catch {
+    throw new Error("Could not reach the API. Check your network connection.");
+  }
+
   if (!res.ok) {
     const detail = await res.json().catch(() => ({ detail: res.statusText }));
     throw new Error(detail?.detail ?? "API error");
   }
   if (res.status === 204) return undefined as T;
-  return res.json();
+
+  const text = await res.text();
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new Error("Unexpected response from the API. Please try again later.");
+  }
 }

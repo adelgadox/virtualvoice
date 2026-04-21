@@ -35,7 +35,7 @@ export default function InfluencersPage() {
     const influencerId = searchParams.get("influencer_id");
 
     if (success === "true") {
-      setToast({ type: "success", message: "Cuenta de Instagram conectada correctamente" });
+      setToast({ type: "success", message: "Instagram account connected successfully" });
       if (influencerId) {
         const inf = influencers.find((i) => i.id === influencerId);
         if (inf) setModal({ type: "accounts", influencer: inf });
@@ -43,10 +43,10 @@ export default function InfluencersPage() {
       window.history.replaceState({}, "", "/dashboard/influencers");
     } else if (oauthError) {
       const messages: Record<string, string> = {
-        no_instagram_account: "No se encontró cuenta Instagram Business vinculada a tus páginas de Facebook",
-        token_exchange_failed: "Error al obtener el token. Intenta de nuevo.",
-        invalid_state: "Error de seguridad en el flujo OAuth. Intenta de nuevo.",
-        missing_params: "Respuesta incompleta de Meta. Intenta de nuevo.",
+        no_instagram_account: "No Instagram Business account found linked to your Facebook pages",
+        token_exchange_failed: "Failed to get the token. Please try again.",
+        invalid_state: "Security error in the OAuth flow. Please try again.",
+        missing_params: "Incomplete response from Meta. Please try again.",
       };
       setToast({ type: "error", message: messages[oauthError] ?? `Error: ${oauthError}` });
       window.history.replaceState({}, "", "/dashboard/influencers");
@@ -70,7 +70,7 @@ export default function InfluencersPage() {
         setInfluencers(infs);
         setSocialAccounts(accounts);
       })
-      .catch((err: unknown) => setError(err instanceof Error ? err.message : "Error al cargar"))
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : "Failed to load"))
       .finally(() => setLoading(false));
   }, [token]);
 
@@ -104,7 +104,7 @@ export default function InfluencersPage() {
             <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Influencers</h1>
             {!loading && (
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                {activeCount} activo{activeCount !== 1 ? "s" : ""} · {influencers.length} total
+                {activeCount} active · {influencers.length} total
               </p>
             )}
           </div>
@@ -115,7 +115,7 @@ export default function InfluencersPage() {
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
             </svg>
-            Nuevo
+            New
           </button>
         </div>
 
@@ -138,7 +138,8 @@ export default function InfluencersPage() {
         {/* Error */}
         {error && !loading && (
           <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3">
-            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <p className="text-sm font-medium text-red-700 dark:text-red-400">Failed to load influencers</p>
+            <p className="text-xs text-red-500 dark:text-red-500 mt-0.5">{error}</p>
           </div>
         )}
 
@@ -148,8 +149,8 @@ export default function InfluencersPage() {
             <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">No hay influencers todavía</p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Crea el primero para empezar</p>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">No influencers yet</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Create your first one to get started</p>
           </div>
         )}
 
@@ -175,7 +176,7 @@ export default function InfluencersPage() {
           <div className="absolute inset-0 bg-black/40" onClick={() => setModal({ type: "closed" })} />
           <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="px-6 pt-6 pb-2">
-              <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Nuevo influencer</h2>
+              <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">New influencer</h2>
             </div>
             <div className="px-6 pb-6 pt-4">
               <InfluencerOnboarding
@@ -195,7 +196,7 @@ export default function InfluencersPage() {
           <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="px-6 pt-6 pb-2">
               <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                Editar · {modal.influencer.name}
+                Edit · {modal.influencer.name}
               </h2>
             </div>
             <div className="px-6 pb-6 pt-4">
@@ -217,7 +218,7 @@ export default function InfluencersPage() {
           <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-md">
             <div className="px-6 pt-6 pb-2 flex items-center justify-between">
               <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                {modal.influencer.name} — Redes sociales
+                {modal.influencer.name} — Social accounts
               </h2>
               <button onClick={() => setModal({ type: "closed" })} className="text-gray-400 hover:text-gray-600">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

@@ -32,7 +32,7 @@ export default function KnowledgeEntryRow({ entry, token, onEdit, onDeleted }: K
   const preview = isLong && !expanded ? entry.content.slice(0, 140) + "…" : entry.content;
 
   async function handleDelete() {
-    if (!confirm("¿Eliminar esta entrada?")) return;
+    if (!confirm("Delete this entry?")) return;
     setDeleting(true);
     try {
       await apiFetch(`/knowledge/${entry.id}`, { method: "DELETE", token });
@@ -61,7 +61,7 @@ export default function KnowledgeEntryRow({ entry, token, onEdit, onDeleted }: K
             onClick={() => setExpanded((v) => !v)}
             className="text-xs text-brand hover:underline mt-1"
           >
-            {expanded ? "Ver menos" : "Ver más"}
+            {expanded ? "Show less" : "Show more"}
           </button>
         )}
       </div>
@@ -72,14 +72,14 @@ export default function KnowledgeEntryRow({ entry, token, onEdit, onDeleted }: K
           onClick={() => onEdit(entry)}
           className="text-xs text-gray-400 hover:text-brand transition-colors p-1 rounded"
         >
-          Editar
+          Edit
         </button>
         <button
           onClick={handleDelete}
           disabled={deleting}
           className="text-xs text-gray-400 hover:text-red-500 transition-colors p-1 rounded disabled:opacity-50"
         >
-          {deleting ? "…" : "Eliminar"}
+          {deleting ? "…" : "Delete"}
         </button>
       </div>
     </div>
