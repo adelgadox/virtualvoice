@@ -43,8 +43,11 @@ Nothing is ever published without human approval. This guarantees quality, brand
 - **LLM-agnostic** — switch between Gemini, Claude, GPT-4o or others without touching business logic
 - **Human-in-the-loop** — every response goes through approval before publishing
 - **RAG over personality** — each influencer's knowledge base is dynamically queried with pgvector
+- **Situational context** — today's date, manual mood/event note, and recent Instagram posts injected dynamically into every prompt
 - **Feedback loop** — approved/edited responses improve the model over time
 - **Multi-influencer** — supports multiple virtual influencers from the same system
+- **Metrics dashboard** — approval rate, edit rate, ignore rate, and published count per influencer
+- **Auto token renewal** — background job refreshes Meta Page Access Tokens before they expire
 
 ---
 
@@ -114,11 +117,13 @@ virtualvoice/
 │   │   │   ├── webhooks.py
 │   │   │   ├── responses.py
 │   │   │   ├── influencers.py
-│   │   │   └── knowledge.py
+│   │   │   ├── knowledge.py
+│   │   │   ├── social_accounts.py  # Instagram OAuth + account management
+│   │   │   └── metrics.py          # Approval/edit/ignore rates per influencer
 │   │   ├── core/
 │   │   │   ├── personality/        # Personality Engine + RAG
 │   │   │   ├── llm/                # LLM provider pattern
-│   │   │   └── meta/               # Meta Graph API integration
+│   │   │   └── meta/               # Meta Graph API + OAuth + token manager
 │   │   ├── models/                 # SQLAlchemy models
 │   │   └── schemas/                # Pydantic schemas
 │   ├── tests/
@@ -201,9 +206,10 @@ Stored in PostgreSQL + pgvector. Contains:
 - Current mood (travel, collaboration, rest, launch)
 - Relevant trends for their niche at that moment
 
-Each LLM call combines all three layers:
+Each LLM call combines all layers:
 ```
 final_prompt = system_prompt_core
+             + situational_context (today's date + mood note + recent IG posts)
              + relevant_knowledge_base_fragments (RAG)
              + current_post_context
              + user_comment
@@ -270,6 +276,25 @@ POST /{comment-id}/replies
 Authorization: Bearer {page_access_token}
 Body: { "message": "approved response" }
 ```
+
+**Token management** — `token_manager.py` validates Page Access Tokens via Meta's `debug_token` endpoint before each publish. If a token is expiring within 7 days it is refreshed automatically. A background job (`token_renewal_loop`) runs every 24 hours to proactively refresh all tokens approaching expiry. If a token is fully revoked, the approval endpoint returns a descriptive 401 prompting the team to reconnect the Instagram account.
+
+---
+
+### Metrics Dashboard
+
+`GET /metrics/` returns per-influencer aggregates from the `pending_responses` table:
+
+| Field | Description |
+|---|---|
+| `total` | All processed responses (approved + edited + ignored) |
+| `approved` / `edited` / `ignored` | Count by final status |
+| `published` | Responses that reached Meta |
+| `approval_rate` | `(approved + edited) / total × 100` |
+| `edit_rate` | `edited / total × 100` |
+| `ignore_rate` | `ignored / total × 100` |
+
+The `/dashboard/metrics` page shows a global summary row and a card per influencer with breakdown bars.
 
 ---
 
@@ -456,7 +481,7 @@ Same pattern as Bioflow: **monorepo with independent deployment per service**.
         │
         ▼
 3. Personality Engine builds the prompt:
-   system_prompt_core + RAG(knowledge_base) + post_context + comment
+   system_prompt_core + situational_context + RAG(knowledge_base) + post_context + comment
         │
         ▼
 4. LLM generates response in the influencer's voice
@@ -477,6 +502,18 @@ Same pattern as Bioflow: **monorepo with independent deployment per service**.
         │
         └── [Ignore] → archived without publishing
 ```
+
+---
+
+### Approval Panel pages
+
+| Route | Purpose |
+|---|---|
+| `/dashboard/queue` | Pending responses — approve, edit, regenerate, or ignore |
+| `/dashboard/history` | All processed responses with status badges |
+| `/dashboard/influencers` | Create and manage influencers + connect Instagram accounts |
+| `/dashboard/knowledge` | Manage the knowledge base for each influencer |
+| `/dashboard/metrics` | Approval/edit/ignore rates and published counts per influencer |
 
 ---
 
