@@ -42,7 +42,22 @@ export interface Influencer {
   slug: string;
   llm_provider: string | null;
   system_prompt_core: string;
+  current_context: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string | null;
+}
+
+export interface InfluencerMetrics {
+  influencer_id: string;
+  influencer_name: string;
+  influencer_slug: string;
+  total: number;
+  approved: number;
+  edited: number;
+  ignored: number;
+  published: number;
+  approval_rate: number;
+  edit_rate: number;
+  ignore_rate: number;
 }

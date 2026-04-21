@@ -16,6 +16,7 @@ const LLM_PROVIDERS = [
 ];
 
 const PROMPT_MAX = 4000;
+const CONTEXT_MAX = 500;
 
 interface InfluencerFormProps {
   influencer?: Influencer;
@@ -31,6 +32,7 @@ export default function InfluencerForm({ influencer, token, onSaved, onCancel }:
   const [slug, setSlug] = useState(influencer?.slug ?? "");
   const [llmProvider, setLlmProvider] = useState(influencer?.llm_provider ?? "deepseek");
   const [prompt, setPrompt] = useState(influencer?.system_prompt_core ?? "");
+  const [currentContext, setCurrentContext] = useState(influencer?.current_context ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,6 +58,7 @@ export default function InfluencerForm({ influencer, token, onSaved, onCancel }:
             name,
             llm_provider: llmProvider || null,
             system_prompt_core: prompt,
+            current_context: currentContext || null,
           }),
         });
       } else {
@@ -152,6 +155,29 @@ export default function InfluencerForm({ influencer, token, onSaved, onCancel }:
         />
         <p className="text-xs text-gray-400">
           Define la personalidad, tono y restricciones del influencer. Este prompt se inyecta en cada respuesta generada.
+        </p>
+      </div>
+
+      {/* Current Context */}
+      <div className="space-y-1">
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+            Contexto situacional
+          </label>
+          <span className={`text-xs tabular-nums ${currentContext.length > CONTEXT_MAX * 0.85 ? "text-amber-500" : "text-gray-400"}`}>
+            {currentContext.length} / {CONTEXT_MAX}
+          </span>
+        </div>
+        <textarea
+          value={currentContext}
+          onChange={(e) => setCurrentContext(e.target.value)}
+          rows={3}
+          maxLength={CONTEXT_MAX}
+          placeholder="Ej: Esta semana estoy en vacaciones en Ibiza, humor relajado y playero. Acabo de lanzar mi nueva colección de verano."
+          className="w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 resize-y focus:outline-none focus:ring-2 focus:ring-brand/40 leading-relaxed"
+        />
+        <p className="text-xs text-gray-400">
+          Nota libre sobre el estado actual del influencer. Se inyecta en cada prompt junto con la fecha de hoy y los posts recientes de Instagram.
         </p>
       </div>
 

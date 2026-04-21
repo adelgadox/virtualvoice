@@ -1,5 +1,7 @@
+import asyncio
 import logging
 import sys
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,7 +22,7 @@ logging.basicConfig(
 logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
-from app.routers import auth, influencers, responses, knowledge, webhooks, social_accounts  # noqa: E402
+from app.routers import auth, influencers, responses, knowledge, webhooks, social_accounts, metrics  # noqa: E402
 from app.models import influencer as _influencer_model  # noqa: F401, E402
 from app.models import social_account as _social_account_model  # noqa: F401, E402
 from app.models import comment as _comment_model  # noqa: F401, E402
@@ -28,6 +30,7 @@ from app.models import pending_response as _pending_response_model  # noqa: F401
 from app.models import knowledge_entry as _knowledge_entry_model  # noqa: F401, E402
 from app.models import user as _user_model  # noqa: F401, E402
 from app.utils.rate_limit import limiter  # noqa: E402
+from app.core.meta.token_renewal import token_renewal_loop  # noqa: E402
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
@@ -40,7 +43,18 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         return response
 
 
-app = FastAPI(title=settings.app_name, debug=settings.debug)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    renewal_task = asyncio.create_task(token_renewal_loop())
+    yield
+    renewal_task.cancel()
+    try:
+        await renewal_task
+    except asyncio.CancelledError:
+        pass
+
+
+app = FastAPI(title=settings.app_name, debug=settings.debug, lifespan=lifespan)
 app.state.limiter = limiter
 
 if settings.debug:
@@ -71,6 +85,7 @@ app.include_router(responses.router)
 app.include_router(knowledge.router)
 app.include_router(webhooks.router)
 app.include_router(social_accounts.router)
+app.include_router(metrics.router)
 
 
 @app.get("/health")

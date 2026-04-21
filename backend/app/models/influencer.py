@@ -14,6 +14,8 @@ class Influencer(Base):
     llm_provider = Column(String, nullable=True)
     # Core system prompt defining personality, tone, identity
     system_prompt_core = Column(Text, nullable=False, default="")
+    # Situational context: free-text note injected into each prompt (mood, events, etc.)
+    current_context = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

@@ -8,6 +8,7 @@ class InfluencerBase(BaseModel):
     slug: str
     llm_provider: str | None = None
     system_prompt_core: str = ""
+    current_context: str | None = None
     is_active: bool = True
 
 
@@ -19,6 +20,7 @@ class InfluencerUpdate(BaseModel):
     name: str | None = None
     llm_provider: str | None = None
     system_prompt_core: str | None = None
+    current_context: str | None = None
     is_active: bool | None = None
 
 

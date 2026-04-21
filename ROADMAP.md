@@ -202,10 +202,10 @@
 
 | # | Task | Description | Complexity | Status |
 |---|------|-------------|------------|--------|
-| 1 | Dynamic situational context | Inject current mood, recent posts, trends into prompt | 🔴 | ⬜ Pending |
-| 2 | Metrics dashboard | Approval rate, edit rate, rejection rate per influencer | 🟡 | ⬜ Pending |
+| 1 | Dynamic situational context | Inject current mood, recent posts, trends into prompt | 🔴 | ✅ Done |
+| 2 | Metrics dashboard | Approval rate, edit rate, rejection rate per influencer | 🟡 | ✅ Done |
 | 3 | Slack notifications | Alert team on new pending comments | 🟡 | ⬜ Pending |
-| 4 | Automatic token renewal | Auto-refresh Meta Page Access Tokens before expiry | 🔴 | ⬜ Pending |
+| 4 | Automatic token renewal | Auto-refresh Meta Page Access Tokens before expiry | 🔴 | ✅ Done |
 | 5 | Threads support | Extend Meta integration to Threads (pending Meta API availability) | 🔴 | ⬜ Pending |
 
 ---
@@ -239,4 +239,4 @@
 
 ---
 
-*Last updated: 2026-04-20 (Phase 3 complete · 1.5.5 token manager · 5.4 Meta webhooks configured)*
+*Last updated: 2026-04-20 (Phase 3 complete · 4.1 situational context · 4.2 metrics dashboard · 4.4 auto token renewal)*
