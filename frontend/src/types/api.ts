@@ -46,3 +46,17 @@ export interface Influencer {
   created_at: string;
   updated_at: string | null;
 }
+
+export interface InfluencerMetrics {
+  influencer_id: string;
+  influencer_name: string;
+  influencer_slug: string;
+  total: number;
+  approved: number;
+  edited: number;
+  ignored: number;
+  published: number;
+  approval_rate: number;
+  edit_rate: number;
+  ignore_rate: number;
+}
