@@ -24,6 +24,7 @@ from app.core.meta.oauth import (
     verify_state,
 )
 from app.core.meta.token_manager import compute_token_expiry
+from app.utils.encryption import encrypt_token
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/social-accounts", tags=["social-accounts"])
@@ -128,8 +129,9 @@ async def instagram_callback(
         ).first()
 
         token_expires_at = compute_token_expiry()
+        encrypted = encrypt_token(account["page_access_token"]) if settings.token_encryption_key else account["page_access_token"]
         if existing:
-            existing.access_token = account["page_access_token"]
+            existing.access_token = encrypted
             existing.token_expires_at = token_expires_at
             existing.username = account["username"]
             existing.page_id = account["page_id"]
@@ -143,7 +145,7 @@ async def instagram_callback(
                 page_id=account["page_id"],
                 username=account["username"],
                 profile_picture_url=account.get("profile_picture_url"),
-                access_token=account["page_access_token"],
+                access_token=encrypted,
                 token_expires_at=token_expires_at,
             ))
         saved += 1

@@ -24,6 +24,7 @@ from typing import TYPE_CHECKING
 import httpx
 
 from app.config import settings
+from app.utils.encryption import decrypt_token
 
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session
@@ -89,6 +90,8 @@ async def get_valid_token(account: SocialAccount, db: Session) -> str:
     if not account.access_token:
         raise TokenInvalidError(f"No access token stored for account {account.id}")
 
+    plaintext = decrypt_token(account.access_token)
+
     now = datetime.now(timezone.utc)
     seven_days = timedelta(days=7)
 
@@ -99,10 +102,10 @@ async def get_valid_token(account: SocialAccount, db: Session) -> str:
         expires_at = account.token_expires_at
 
     if expires_at and (expires_at - now) > seven_days:
-        return account.access_token
+        return plaintext
 
     # Validate with Meta
-    healthy = await is_token_healthy(account.access_token)
+    healthy = await is_token_healthy(plaintext)
 
     if not healthy:
         logger.warning("Token for social account %s is invalid — re-auth required", account.id)
@@ -114,8 +117,10 @@ async def get_valid_token(account: SocialAccount, db: Session) -> str:
     # Token is valid — attempt refresh if expiring soon
     if expires_at and (expires_at - now) <= seven_days:
         try:
-            new_token = await refresh_long_lived_token(account.access_token)
-            account.access_token = new_token
+            new_token = await refresh_long_lived_token(plaintext)
+            from app.utils.encryption import encrypt_token
+            from app.config import settings as _settings
+            account.access_token = encrypt_token(new_token) if _settings.token_encryption_key else new_token
             account.token_expires_at = now + timedelta(days=_TOKEN_TTL_DAYS)
             db.commit()
             logger.info("Refreshed token for social account %s", account.id)
@@ -123,7 +128,7 @@ async def get_valid_token(account: SocialAccount, db: Session) -> str:
         except Exception as exc:
             logger.warning("Token refresh failed for account %s: %s — using existing token", account.id, exc)
 
-    return account.access_token
+    return plaintext
 
 
 def compute_token_expiry() -> datetime:
