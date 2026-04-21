@@ -40,7 +40,7 @@ def list_social_accounts(
     query = db.query(SocialAccount).filter(SocialAccount.is_active == True)  # noqa: E712
     if influencer_id:
         query = query.filter(SocialAccount.influencer_id == influencer_id)
-    return query.order_by(SocialAccount.created_at.desc()).all()
+    return query.order_by(SocialAccount.created_at.desc()).limit(200).all()
 
 
 @router.get("/instagram/authorize")

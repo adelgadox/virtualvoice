@@ -73,6 +73,14 @@ async def lifespan(app: FastAPI):
         pass
 
 
+import os
+_railway_env = os.getenv("RAILWAY_ENVIRONMENT", "")
+if _railway_env == "production" and settings.debug:
+    raise RuntimeError(
+        "DEBUG=true is not allowed in RAILWAY_ENVIRONMENT=production. "
+        "Set DEBUG=false in your Railway environment variables."
+    )
+
 app = FastAPI(title=settings.app_name, debug=settings.debug, lifespan=lifespan)
 app.state.limiter = limiter
 

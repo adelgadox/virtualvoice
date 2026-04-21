@@ -16,7 +16,7 @@ router = APIRouter(prefix="/influencers", tags=["influencers"])
 @router.get("/", response_model=list[InfluencerOut])
 @limiter.limit("60/minute")
 def list_influencers(request: Request, db: Session = Depends(get_db), _: User = Depends(get_current_user)):
-    return db.query(Influencer).order_by(Influencer.name).all()
+    return db.query(Influencer).order_by(Influencer.name).limit(200).all()
 
 
 @router.post("/", response_model=InfluencerOut, status_code=status.HTTP_201_CREATED)
