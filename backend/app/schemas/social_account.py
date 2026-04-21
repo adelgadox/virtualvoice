@@ -24,4 +24,3 @@ class SocialAccountCreate(BaseModel):
     account_id: str
     page_id: str | None = None
     username: str | None = None
-    access_token: str

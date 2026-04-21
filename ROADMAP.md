@@ -315,7 +315,7 @@
 | # | Task | Description | Complexity | Status |
 |---|------|-------------|------------|--------|
 | 1 | Fix rate limiter IP extraction | `get_client_ip()` reads raw `X-Forwarded-For` — spoofable. Use `request.client.host` (already resolved by `ProxyHeadersMiddleware`) | 🟢 | ✅ Done |
-| 2 | Encrypt Meta access tokens at rest | `social_accounts.access_token` is plaintext in DB. Use Fernet or KMS; decrypt only at point of use | 🔴 | ⬜ Pending |
+| 2 | Encrypt Meta access tokens at rest | `social_accounts.access_token` is plaintext in DB. Use Fernet or KMS; decrypt only at point of use | 🔴 | ✅ Done |
 | 3 | URL-encode OAuth error redirect param | `oauth_error` value reflected unencoded into redirect URL. Apply `urllib.parse.quote(error, safe='')` | 🟢 | ✅ Done |
 | 4 | Add pagination to unbounded list endpoints | `GET /responses/pending`, `/knowledge/`, `/social-accounts/`, `/influencers/` have no `LIMIT` — add `.limit(200)` | 🟢 | ✅ Done |
 | 5 | Add production debug guard | Add startup assertion: `DEBUG` must be `false` when `RAILWAY_ENVIRONMENT=production` | 🟢 | ✅ Done |
@@ -326,8 +326,8 @@
 
 | # | Task | Description | Complexity | Status |
 |---|------|-------------|------------|--------|
-| 1 | Add secret leak detection pre-commit hook | Add `gitleaks` or `detect-secrets` to prevent accidental `.env` commits | 🟢 | ⬜ Pending |
-| 2 | Remove unused `access_token` from `SocialAccountCreate` schema | Schema exposes a field with no route — remove or delete the schema entirely | 🟢 | ⬜ Pending |
+| 1 | Add secret leak detection pre-commit hook | Add `gitleaks` or `detect-secrets` to prevent accidental `.env` commits | 🟢 | ✅ Done |
+| 2 | Remove unused `access_token` from `SocialAccountCreate` schema | Schema exposes a field with no route — remove or delete the schema entirely | 🟢 | ✅ Done |
 
 ---
 
