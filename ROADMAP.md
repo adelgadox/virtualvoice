@@ -198,15 +198,13 @@
 
 ---
 
-### Phase 4 — Quality & Intelligence ⬜
+### Phase 4 — Quality & Intelligence ✅
 
 | # | Task | Description | Complexity | Status |
 |---|------|-------------|------------|--------|
 | 1 | Dynamic situational context | Inject current mood, recent posts, trends into prompt | 🔴 | ✅ Done |
 | 2 | Metrics dashboard | Approval rate, edit rate, rejection rate per influencer | 🟡 | ✅ Done |
-| 3 | Slack notifications | Alert team on new pending comments | 🟡 | ⬜ Pending |
-| 4 | Automatic token renewal | Auto-refresh Meta Page Access Tokens before expiry | 🔴 | ✅ Done |
-| 5 | Threads support | Extend Meta integration to Threads (pending Meta API availability) | 🔴 | ⬜ Pending |
+| 3 | Automatic token renewal | Auto-refresh Meta Page Access Tokens before expiry | 🔴 | ✅ Done |
 
 ---
 
@@ -216,12 +214,14 @@
 
 | # | Task | Description | Complexity | Status |
 |---|------|-------------|------------|--------|
-| 1 | Twitter/X — read mentions | Read mentions and replies via Twitter API v2 | 🔴 | ⬜ Pending |
-| 2 | Twitter/X — publish response | Publish approved reply via Twitter API v2 | 🔴 | ⬜ Pending |
-| 3 | TikTok — read comments | Read comments via TikTok for Developers API | 🔴 | ⬜ Pending |
-| 4 | TikTok — publish response | Publish approved comment reply | 🔴 | ⬜ Pending |
-| 5 | OnlyFans | Research available API; official API is limited | 🔴 | ⬜ Pending |
-| 6 | Frontend — platform selector | Filter approval queue by platform | 🟢 | ⬜ Pending |
+| 1 | Slack notifications | Alert team on new pending comments | 🟡 | ⬜ Pending |
+| 2 | Threads support | Extend Meta integration to Threads (pending Meta API availability) | 🔴 | ⬜ Pending |
+| 3 | Twitter/X — read mentions | Read mentions and replies via Twitter API v2 | 🔴 | ⬜ Pending |
+| 4 | Twitter/X — publish response | Publish approved reply via Twitter API v2 | 🔴 | ⬜ Pending |
+| 5 | TikTok — read comments | Read comments via TikTok for Developers API | 🔴 | ⬜ Pending |
+| 6 | TikTok — publish response | Publish approved comment reply | 🔴 | ⬜ Pending |
+| 7 | OnlyFans | Research available API; official API is limited | 🔴 | ⬜ Pending |
+| 8 | Frontend — platform selector | Filter approval queue by platform | 🟢 | ⬜ Pending |
 
 ---
 
@@ -239,4 +239,4 @@
 
 ---
 
-*Last updated: 2026-04-20 (Phase 3 complete · 4.1 situational context · 4.2 metrics dashboard · 4.4 auto token renewal)*
+*Last updated: 2026-04-20 (Phase 4 complete · Slack + Threads moved to Phase 4.5)*
