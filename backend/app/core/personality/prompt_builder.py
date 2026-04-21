@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
 from app.models.comment import Comment
@@ -11,7 +12,12 @@ _INSTRUCTION = (
 )
 
 
-def build_prompt(influencer: Influencer, comment: Comment, db: Session) -> tuple[str, str]:
+def build_prompt(
+    influencer: Influencer,
+    comment: Comment,
+    db: Session,
+    recent_posts: list[str] | None = None,
+) -> tuple[str, str]:
     knowledge_fragments = retrieve_relevant_knowledge(
         influencer_id=influencer.id,
         query=comment.content,
@@ -27,9 +33,22 @@ def build_prompt(influencer: Influencer, comment: Comment, db: Session) -> tuple
     if comment.post_content:
         post_block = f"\n\n## Your post that received this comment:\n{comment.post_content}"
 
+    # Situational context block: today's date + manual note + recent posts
+    situational_parts: list[str] = []
+    today = datetime.now(timezone.utc).strftime("%A, %B %d, %Y")
+    situational_parts.append(f"Today is {today}.")
+    if influencer.current_context:
+        situational_parts.append(influencer.current_context.strip())
+    if recent_posts:
+        posts_text = "\n".join(f"- {caption[:300]}" for caption in recent_posts[:5])
+        situational_parts.append(f"Your most recent Instagram posts:\n{posts_text}")
+
+    situational_block = "\n\n## Current situation:\n" + "\n\n".join(situational_parts)
+
     system_prompt = (
         f"{_INSTRUCTION}\n\n"
         f"## Your personality:\n{influencer.system_prompt_core}"
+        f"{situational_block}"
         f"{knowledge_block}"
         f"{post_block}"
     )

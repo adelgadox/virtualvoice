@@ -42,6 +42,7 @@ export interface Influencer {
   slug: string;
   llm_provider: string | null;
   system_prompt_core: string;
+  current_context: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string | null;
