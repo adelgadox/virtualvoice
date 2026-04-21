@@ -247,6 +247,45 @@
 
 ---
 
+### Phase 5.5 — Voice Layer (ElevenLabs) ⬜
+
+> Give each influencer a unique, cloneable voice. Text responses become audio responses.
+> All tasks in this phase require an ElevenLabs API key (`ELEVENLABS_API_KEY`).
+
+#### 5.5.1 — Foundation
+
+| # | Task | Description | Complexity | Status |
+|---|------|-------------|------------|--------|
+| 1 | `voice_id` field on Influencer | Add `voice_id VARCHAR`, `voice_stability FLOAT`, `voice_similarity FLOAT` to `influencers` table + migration | 🟢 | ⬜ Pending |
+| 2 | `audio_url` field on PendingResponse | Add `audio_url VARCHAR`, `audio_generated BOOL` to `pending_responses` table + migration | 🟢 | ⬜ Pending |
+| 3 | `_voice.py` synthesis service | `async synthesize(text, voice_id, stability, similarity) → bytes` via ElevenLabs TTS API | 🟡 | ⬜ Pending |
+| 4 | Audio storage | Upload generated audio to Supabase Storage or S3; store public URL in `audio_url` | 🟡 | ⬜ Pending |
+| 5 | Voice selector in InfluencerForm | Add `voice_id` input + optional stability/similarity sliders to the influencer edit form | 🟢 | ⬜ Pending |
+
+#### 5.5.2 — Approval Queue Integration
+
+| # | Task | Description | Complexity | Status |
+|---|------|-------------|------------|--------|
+| 1 | Auto-generate audio on response creation | After LLM generates text response, trigger `_voice.py` in background if influencer has `voice_id` | 🟡 | ⬜ Pending |
+| 2 | Audio preview in ApprovalCard | Add "▶ Preview" button to play `audio_url` before approving; shows spinner while generating | 🟢 | ⬜ Pending |
+| 3 | Audio DM publishing | On approve: if `audio_url` exists, send voice message DM via Instagram API instead of (or alongside) text reply | 🔴 | ⬜ Pending |
+
+#### 5.5.3 — Content Generation
+
+| # | Task | Description | Complexity | Status |
+|---|------|-------------|------------|--------|
+| 1 | Voiceover generator | Given a script (manual or LLM-generated), produce audio file for Reels / Stories narration | 🟡 | ⬜ Pending |
+| 2 | Weekly audio snippet | Cron job: LLM generates a short monologue based on `current_context`, ElevenLabs converts to audio, stored for download | 🔴 | ⬜ Pending |
+
+#### 5.5.4 — Conversational Voice (Advanced)
+
+| # | Task | Description | Complexity | Status |
+|---|------|-------------|------------|--------|
+| 1 | Real-time voice WebSocket | ElevenLabs Conversational AI endpoint with `system_prompt_core` + knowledge base as context; low-latency back-and-forth | 🔴 | ⬜ Pending |
+| 2 | Phone hotline via Twilio | Twilio TwiML → ElevenLabs Conversational AI → fans call a real number and talk to the influencer | 🔴 | ⬜ Pending |
+
+---
+
 ### Phase 6 — Security Hardening ⬜
 
 > Findings from a full security review (2026-04-20). Ordered by severity.
@@ -292,4 +331,4 @@
 
 ---
 
-*Last updated: 2026-04-20 (Phase 4 complete · Phase 6 security findings added)*
+*Last updated: 2026-04-20 (Phase 4 complete · Phase 5.5 ElevenLabs voice layer added · Phase 6 security findings added)*
