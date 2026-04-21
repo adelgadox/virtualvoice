@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
-from app.dependencies import get_current_user
+from app.dependencies import get_current_user, get_current_admin
 from app.models.influencer import Influencer
 from app.models.social_account import SocialAccount
 from app.models.user import User
@@ -164,7 +164,7 @@ def disconnect_social_account(
     request: Request,
     account_id: UUID,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(get_current_admin),
 ):
     account = db.query(SocialAccount).filter(SocialAccount.id == account_id).first()
     if not account:

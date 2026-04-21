@@ -24,7 +24,6 @@ class PendingResponseOut(BaseModel):
 
 class ApproveRequest(BaseModel):
     final_text: str | None = None
-    approved_by: str
 
 
 class RegenerateRequest(BaseModel):

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.dependencies import get_current_user
+from app.dependencies import get_current_user, get_current_admin
 from app.models.knowledge_entry import KnowledgeEntry
 from app.models.user import User
 from app.schemas.knowledge import KnowledgeEntryCreate, KnowledgeEntryOut, KnowledgeEntryUpdate
@@ -51,7 +51,7 @@ def update_entry(
     entry_id: UUID,
     body: KnowledgeEntryUpdate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(get_current_admin),
 ):
     entry = db.query(KnowledgeEntry).filter(KnowledgeEntry.id == entry_id).first()
     if not entry:
@@ -68,7 +68,7 @@ def update_entry(
 
 @router.delete("/{entry_id}", status_code=status.HTTP_204_NO_CONTENT)
 @limiter.limit("30/minute")
-def delete_entry(request: Request, entry_id: UUID, db: Session = Depends(get_db), _: User = Depends(get_current_user)):
+def delete_entry(request: Request, entry_id: UUID, db: Session = Depends(get_db), _: User = Depends(get_current_admin)):
     entry = db.query(KnowledgeEntry).filter(KnowledgeEntry.id == entry_id).first()
     if not entry:
         raise HTTPException(status_code=404, detail="Entry not found")

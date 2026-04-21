@@ -51,7 +51,6 @@ export default function QueuePage() {
   }
 
   const influencerMap = Object.fromEntries(influencers.map((i) => [i.id, i.name]));
-  const approvedBy = session?.user?.email ?? "unknown";
 
   return (
     <div className="space-y-6">
@@ -120,7 +119,6 @@ export default function QueuePage() {
           response={resp}
           influencerName={influencerMap[resp.influencer_id] ?? "Influencer"}
           token={token ?? ""}
-          approvedBy={approvedBy}
           onDone={handleDone}
         />
       ))}

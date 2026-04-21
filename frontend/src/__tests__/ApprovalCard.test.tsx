@@ -33,7 +33,6 @@ function renderCard(overrides: Partial<PendingResponse> = {}, onDone = jest.fn()
       response={{ ...baseResponse, ...overrides }}
       influencerName="Luna García"
       token="test-token"
-      approvedBy="admin@test.com"
       onDone={onDone}
     />
   );

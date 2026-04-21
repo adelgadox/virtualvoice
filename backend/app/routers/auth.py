@@ -36,9 +36,26 @@ def _create_token(user_id: str) -> str:
     return jwt.encode({"sub": user_id, "exp": expire}, settings.secret_key, algorithm=settings.algorithm)
 
 
+def _verify_google_id_token(id_token_str: str) -> dict:
+    """Verify a Google ID token server-side. Raises on failure. Isolated for testability."""
+    from google.auth.transport import requests as google_requests
+    from google.oauth2 import id_token as google_id_token
+
+    return google_id_token.verify_oauth2_token(
+        id_token_str,
+        google_requests.Request(),
+        settings.google_client_id,
+    )
+
+
 @router.post("/register", response_model=TokenOut, status_code=status.HTTP_201_CREATED)
 @limiter.limit("5/hour")
 def register(request: Request, body: RegisterRequest, db: Session = Depends(get_db)):
+    if not settings.registration_enabled:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Registration is currently closed. Contact an administrator.",
+        )
     existing = db.query(User).filter(User.email == body.email).first()
     if existing:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
@@ -69,14 +86,7 @@ def login(request: Request, body: LoginRequest, db: Session = Depends(get_db)):
 def google_auth(request: Request, body: GoogleAuthRequest, db: Session = Depends(get_db)):
     # Verify the Google ID token server-side — never trust client-supplied identity claims
     try:
-        from google.oauth2 import id_token as google_id_token
-        from google.auth.transport import requests as google_requests
-
-        idinfo = google_id_token.verify_oauth2_token(
-            body.id_token,
-            google_requests.Request(),
-            settings.google_client_id,
-        )
+        idinfo = _verify_google_id_token(body.id_token)
     except Exception as exc:
         logger.warning("Google ID token verification failed: %s", exc)
         raise HTTPException(
@@ -108,6 +118,11 @@ def google_auth(request: Request, body: GoogleAuthRequest, db: Session = Depends
             db.commit()
             db.refresh(user)
     else:
+        if not settings.registration_enabled:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Registration is currently closed. Contact an administrator.",
+            )
         user = User(
             email=email,
             full_name=full_name,

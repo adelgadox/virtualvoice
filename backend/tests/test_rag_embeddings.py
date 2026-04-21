@@ -194,6 +194,7 @@ class TestFeedbackLoop:
         user = MagicMock()
         user.is_active = True
         user.is_admin = True
+        user.email = "admin@test.com"
         app.dependency_overrides[get_current_user] = lambda: user
         app.dependency_overrides[get_db] = lambda: db
 
@@ -201,7 +202,7 @@ class TestFeedbackLoop:
             with TestClient(app) as client:
                 res = client.post(
                     f"/responses/{resp.id}/approve",
-                    json={"approved_by": "admin@test.com"},
+                    json={},
                 )
 
         app.dependency_overrides.clear()
@@ -242,13 +243,14 @@ class TestFeedbackLoop:
         user = MagicMock()
         user.is_active = True
         user.is_admin = True
+        user.email = "admin@test.com"
         app.dependency_overrides[get_current_user] = lambda: user
         app.dependency_overrides[get_db] = lambda: db
 
         with TestClient(app) as client:
             res = client.post(
                 f"/responses/{resp.id}/approve",
-                json={"approved_by": "admin@test.com"},
+                json={},
             )
 
         app.dependency_overrides.clear()

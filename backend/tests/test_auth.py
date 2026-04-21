@@ -249,17 +249,30 @@ class TestLogin:
 # ---------------------------------------------------------------------------
 
 class TestGoogleAuth:
+    """
+    /auth/google now verifies the Google ID token server-side via
+    google.oauth2.id_token.verify_oauth2_token. All tests patch that function
+    so no real HTTP call to Google is made.
+    """
+
     def setup_method(self):
         _clear()
 
-    def _google_payload(self, **kwargs):
-        return {
-            "google_id": "g-123",
-            "email": "google@example.com",
-            "full_name": "Google User",
-            "avatar_url": None,
-            **kwargs,
-        }
+    _FAKE_IDINFO = {
+        "sub": "g-123",
+        "email": "google@example.com",
+        "name": "Google User",
+        "picture": None,
+    }
+
+    def _post_google(self, client, idinfo: dict | None = None, id_token: str = "fake-id-token"):
+        """Send POST /auth/google with a patched verify_oauth2_token."""
+        resolved = idinfo if idinfo is not None else self._FAKE_IDINFO
+        with patch(
+            "app.routers.auth._verify_google_id_token",
+            return_value=resolved,
+        ):
+            return client.post("/auth/google", json={"id_token": id_token})
 
     def test_google_new_user_creates_and_returns_token(self):
         db = MagicMock()
@@ -276,7 +289,7 @@ class TestGoogleAuth:
         app.dependency_overrides[get_db] = lambda: db
 
         with TestClient(app) as client:
-            res = client.post("/auth/google", json=self._google_payload())
+            res = self._post_google(client)
 
         assert res.status_code == 200
         assert "access_token" in res.json()
@@ -284,12 +297,11 @@ class TestGoogleAuth:
     def test_google_existing_user_by_google_id_returns_token(self):
         user = _make_user(google_id="g-123", auth_provider="google")
         db = MagicMock()
-        # First filter (by google_id) returns the user
         db.query.return_value.filter.return_value.first.return_value = user
         app.dependency_overrides[get_db] = lambda: db
 
         with TestClient(app) as client:
-            res = client.post("/auth/google", json=self._google_payload())
+            res = self._post_google(client)
 
         assert res.status_code == 200
         assert "access_token" in res.json()
@@ -302,15 +314,13 @@ class TestGoogleAuth:
         def first_side_effect():
             nonlocal call_count
             call_count += 1
-            # First call: lookup by google_id → None
-            # Second call: lookup by email → user
             return None if call_count == 1 else user
 
         db.query.return_value.filter.return_value.first.side_effect = first_side_effect
         app.dependency_overrides[get_db] = lambda: db
 
         with TestClient(app) as client:
-            res = client.post("/auth/google", json=self._google_payload())
+            res = self._post_google(client)
 
         assert res.status_code == 200
         assert user.google_id == "g-123"
@@ -322,10 +332,35 @@ class TestGoogleAuth:
         app.dependency_overrides[get_db] = lambda: db
 
         with TestClient(app) as client:
-            res = client.post("/auth/google", json=self._google_payload(google_id="g-456"))
+            res = self._post_google(client, idinfo={**self._FAKE_IDINFO, "sub": "g-456"})
 
         assert res.status_code == 403
         assert "disabled" in res.json()["detail"]
+
+    def test_google_invalid_token_returns_401(self):
+        app.dependency_overrides[get_db] = lambda: MagicMock()
+
+        with patch(
+            "app.routers.auth._verify_google_id_token",
+            side_effect=ValueError("bad token"),
+        ):
+            with TestClient(app) as client:
+                res = client.post("/auth/google", json={"id_token": "bad-token"})
+
+        assert res.status_code == 401
+        assert "Invalid Google token" in res.json()["detail"]
+
+    def test_google_registration_disabled_blocks_new_user(self):
+        db = MagicMock()
+        db.query.return_value.filter.return_value.first.return_value = None
+        app.dependency_overrides[get_db] = lambda: db
+
+        with patch.object(settings, "registration_enabled", False):
+            with TestClient(app) as client:
+                res = self._post_google(client)
+
+        assert res.status_code == 403
+        assert "closed" in res.json()["detail"]
 
 
 # ---------------------------------------------------------------------------

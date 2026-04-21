@@ -8,7 +8,6 @@ interface ApprovalCardProps {
   response: PendingResponse;
   influencerName: string;
   token: string;
-  approvedBy: string;
   onDone: (id: string) => void;
 }
 
@@ -16,7 +15,6 @@ export default function ApprovalCard({
   response,
   influencerName,
   token,
-  approvedBy,
   onDone,
 }: ApprovalCardProps) {
   const [editing, setEditing] = useState(false);
@@ -36,7 +34,6 @@ export default function ApprovalCard({
         method: "POST",
         token,
         body: JSON.stringify({
-          approved_by: approvedBy,
           final_text: finalText ?? null,
         }),
       });
