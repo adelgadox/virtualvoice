@@ -183,7 +183,7 @@
 
 ---
 
-### Phase 3 — RAG + Multi-influencer ⬜
+### Phase 3 — RAG + Multi-influencer ✅
 
 > Real intelligence: semantic embeddings, vector search, and full multi-account support.
 
@@ -194,7 +194,7 @@
 | 3 | RAG search (`rag.py`) | Cosine similarity via pgvector; graceful fallback to recency order | 🟡 | ✅ Done |
 | 4 | RAG integration | Fragments injected into Personality Engine via `prompt_builder.py` | 🟢 | ✅ Done |
 | 5 | Feedback loop | Approved/edited responses saved as `voice_examples` on approve | 🟡 | ✅ Done |
-| 6 | Full multi-influencer | Webhook routing by social account → influencer; per-influencer filters in UI | 🟡 | ⬜ Pending |
+| 6 | Full multi-influencer | Webhook routing by social account → influencer; per-influencer filters in UI | 🟡 | ✅ Done |
 
 ---
 
@@ -232,11 +232,11 @@
 | 1 | Deploy backend on Railway | FastAPI service + environment variables | 🟡 | ✅ Done |
 | 2 | PostgreSQL on Railway | Provision DB + enable pgvector extension | 🟢 | ✅ Done |
 | 3 | Deploy frontend on Vercel | Next.js app with `NEXT_PUBLIC_API_URL` pointing to Railway | 🟢 | ✅ Done |
-| 4 | Configure Meta webhooks | Register callback URL in Meta Developer Console | 🟡 | ⬜ Pending |
+| 4 | Configure Meta webhooks | Register callback URL in Meta Developer Console | 🟡 | ✅ Done |
 | 5 | Production environment variables | All secrets configured in Railway and Vercel | 🟢 | ✅ Done |
 | 6 | CI/CD — GitHub Actions | Run tests on every PR; block merge on failure | 🟡 | ✅ Done |
 | 7 | Error monitoring | Sentry or Railway native logs + alerting | 🟡 | ⬜ Pending |
 
 ---
 
-*Last updated: 2026-04-19 (Phase 1.7 rate limiting complete · Phase 5 backend + frontend deployed)*
+*Last updated: 2026-04-20 (Phase 3 complete · 1.5.5 token manager · 5.4 Meta webhooks configured)*
