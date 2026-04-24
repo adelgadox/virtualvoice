@@ -268,7 +268,7 @@
 
 | # | Task | Description | Complexity | Status |
 |---|------|-------------|------------|--------|
-| 1 | DB: `voice_id` + settings on Influencer | Add `voice_id VARCHAR`, `voice_stability FLOAT DEFAULT 0.5`, `voice_similarity FLOAT DEFAULT 0.75` to `influencers` + migration | 🟢 | ⬜ Pending |
+| 1 | DB: voice fields on Influencer | Add `voice_id VARCHAR`, `voice_name VARCHAR`, `voice_preview_url VARCHAR`, `voice_stability FLOAT DEFAULT 0.5`, `voice_similarity FLOAT DEFAULT 0.75` to `influencers` + migration | 🟢 | ⬜ Pending |
 | 2 | DB: audio fields on PendingResponse | Add `audio_url VARCHAR`, `audio_cache_key VARCHAR` to `pending_responses` + migration | 🟢 | ⬜ Pending |
 | 3 | `_voice.py` — ElevenLabs synthesis | `async synthesize(text, voice_id, stability, similarity) → bytes` — calls `POST /v1/text-to-speech/{voice_id}` with `eleven_turbo_v2_5` model | 🟡 | ⬜ Pending |
 | 4 | `_storage.py` — R2/S3 upload | `async upload_audio(key: str, data: bytes) → str` — uploads MP3 to R2, returns public URL; checks if key already exists before uploading (cache hit) | 🟡 | ⬜ Pending |
@@ -287,8 +287,8 @@
 | 2 | Voice catalog panel | Fetch `GET /voices`, display grid of available ElevenLabs voices with name + "▶ Preview" button (plays `preview_url`) | 🟡 | ⬜ Pending |
 | 3 | Influencer selector | Dropdown listing all influencers; shows current assigned `voice_id` if any | 🟢 | ⬜ Pending |
 | 4 | Text-to-speech playground | Textarea for input text + stability/similarity sliders + "Generate" button → calls `POST /voices/generate` → plays returned audio inline | 🟡 | ⬜ Pending |
-| 5 | Assign voice to influencer | "Assign to [influencer]" button on voice card → calls `PATCH /influencers/{id}` with `{ voice_id, voice_stability, voice_similarity }` | 🟢 | ⬜ Pending |
-| 6 | Voice assignment badge on influencer | Show assigned voice name (from ElevenLabs catalog) in `InfluencerCard` | 🟢 | ⬜ Pending |
+| 5 | Assign voice to influencer | "Assign to [influencer]" button on voice card → calls `PATCH /influencers/{id}` with `{ voice_id, voice_name, voice_preview_url, voice_stability, voice_similarity }` — saves both the voice ID and the catalog sample URL | 🟢 | ⬜ Pending |
+| 6 | Voice assignment badge on influencer | Show assigned voice name + "▶" button in `InfluencerCard` that plays the stored `voice_preview_url` directly (no API call needed) | 🟢 | ⬜ Pending |
 | 7 | Download generated audio | Download button on playground result (MP3) | 🟢 | ⬜ Pending |
 | 8 | Unit tests — VoicesPage | Mock `GET /voices`, `POST /voices/generate`, verify generate + assign flow | 🟡 | ⬜ Pending |
 
