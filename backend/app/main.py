@@ -50,6 +50,7 @@ from app.models import knowledge_entry as _knowledge_entry_model  # noqa: F401, 
 from app.models import user as _user_model  # noqa: F401, E402
 from app.utils.rate_limit import limiter  # noqa: E402
 from app.core.meta.token_renewal import token_renewal_loop  # noqa: E402
+from app.core.denylist_cleanup import denylist_cleanup_loop  # noqa: E402
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
@@ -59,18 +60,23 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Frame-Options"] = "SAMEORIGIN"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["X-XSS-Protection"] = "1; mode=block"
+        if not settings.debug:
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         return response
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     renewal_task = asyncio.create_task(token_renewal_loop())
+    cleanup_task = asyncio.create_task(denylist_cleanup_loop())
     yield
     renewal_task.cancel()
-    try:
-        await renewal_task
-    except asyncio.CancelledError:
-        pass
+    cleanup_task.cancel()
+    for task in (renewal_task, cleanup_task):
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
 
 
 import os

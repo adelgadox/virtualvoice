@@ -48,7 +48,7 @@ export default function InfluencersPage() {
         invalid_state: "Security error in the OAuth flow. Please try again.",
         missing_params: "Incomplete response from Meta. Please try again.",
       };
-      setToast({ type: "error", message: messages[oauthError] ?? `Error: ${oauthError}` });
+      setToast({ type: "error", message: messages[oauthError] ?? "An unexpected error occurred. Please try again." });
       window.history.replaceState({}, "", "/dashboard/influencers");
     }
   }, [searchParams, influencers]);

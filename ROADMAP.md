@@ -416,12 +416,12 @@
 
 | # | Task | Description | Severity | Status |
 |---|------|-------------|----------|--------|
-| 1 | Use `UUID` type for `user_id` path params in studio | `update_user_role` and `update_user_status` declare `user_id: str` — FastAPI skips UUID validation. Change to `user_id: UUID` in `routers/studio.py:71,89` and update the equality check to `user.id == user_id`. | 🟡 MEDIUM | ⬜ Pending |
-| 2 | Add denylist cleanup cron job | `token_denylist` table grows unboundedly — no cleanup of expired entries. Add a periodic task (similar to `token_renewal_loop`) that deletes rows where `expires_at < now()`. The index `ix_token_denylist_expires_at` already exists. | 🟡 MEDIUM | ⬜ Pending |
+| 1 | Use `UUID` type for `user_id` path params in studio | `update_user_role` and `update_user_status` declare `user_id: str` — FastAPI skips UUID validation. Changed to `user_id: UUID` in `routers/studio.py`; equality checks updated to native UUID comparison. | 🟡 MEDIUM | ✅ Done |
+| 2 | Add denylist cleanup cron job | `token_denylist` table grows unboundedly — no cleanup of expired entries. Added `denylist_cleanup_loop` in `core/denylist_cleanup.py` (runs every 1h); wired into `lifespan` in `main.py` alongside `token_renewal_loop`. | 🟡 MEDIUM | ✅ Done |
 | 3 | Validate Fernet key format at startup | `utils/encryption.py` calls `Fernet(key)` without verifying the key is valid. Add a startup check in `lifespan`: attempt `Fernet(settings.token_encryption_key.encode())` and raise `RuntimeError` with a clear message on failure. | 🟡 MEDIUM | ✅ Done |
-| 4 | Re-validate session role on each request | `auth.ts` caches `role` in the NextAuth JWT indefinitely (`!token.role` guard). A demoted admin keeps Studio access until session expiry. Remove the `!token.role` guard so role is re-fetched on every JWT rotation, or set a short `maxAge` on the NextAuth session. | 🟡 MEDIUM | ⬜ Pending |
-| 5 | Sanitize OAuth error reflected as toast | `influencers/page.tsx:51` renders `oauthError` query param as toast text with no sanitization (`messages[oauthError] ?? \`Error: ${oauthError}\``). Replace the fallback with a generic message: `"An unexpected error occurred. Please try again."` | 🟡 MEDIUM | ⬜ Pending |
-| 6 | Add HSTS header to backend middleware | `SecurityHeadersMiddleware` in `main.py` is missing `Strict-Transport-Security`. Add `response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"` (skip in `settings.debug` mode). | 🟡 MEDIUM | ⬜ Pending |
+| 4 | Re-validate session role on each request | `auth.ts` caches `role` in the NextAuth JWT indefinitely (`!token.role` guard). Removed the `!token.role` condition — role is now re-fetched on every JWT rotation so demoted admins lose Studio access promptly. | 🟡 MEDIUM | ✅ Done |
+| 5 | Sanitize OAuth error reflected as toast | `influencers/page.tsx:51` renders `oauthError` query param as toast text with no sanitization. Replaced the raw `\`Error: ${oauthError}\`` fallback with `"An unexpected error occurred. Please try again."` | 🟡 MEDIUM | ✅ Done |
+| 6 | Add HSTS header to backend middleware | `SecurityHeadersMiddleware` in `main.py` is missing `Strict-Transport-Security`. Added `max-age=31536000; includeSubDomains` (skipped when `settings.debug` is true). | 🟡 MEDIUM | ✅ Done |
 
 #### 7.4 — Low
 
