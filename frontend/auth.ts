@@ -63,11 +63,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       const extUser = user as ExtendedUser | undefined;
       if (extUser?.accessToken) {
         token.accessToken = extUser.accessToken;
+        // Fetch role from backend on first sign-in
+        const res = await fetch(`${API_URL}/auth/me`, {
+          headers: { Authorization: `Bearer ${extUser.accessToken}` },
+        });
+        if (res.ok) {
+          const profile = await res.json();
+          token.role = profile.role ?? "user";
+        }
       }
       return token;
     },
     async session({ session, token }) {
       session.accessToken = token.accessToken as string;
+      session.role = token.role as string | undefined;
       return session;
     },
   },
