@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -14,13 +14,16 @@ from app.schemas.studio import (
     UpdateRoleRequest,
     UpdateStatusRequest,
 )
+from app.utils.rate_limit import limiter
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/studio", tags=["studio"])
 
 
 @router.get("/stats", response_model=StudioStats)
+@limiter.limit("30/minute")
 def get_stats(
+    request: Request,
     db: Session = Depends(get_db),
     _: User = Depends(get_current_admin),
 ) -> StudioStats:
@@ -37,7 +40,9 @@ def get_stats(
 
 
 @router.get("/users", response_model=list[StudioUser])
+@limiter.limit("30/minute")
 def list_users(
+    request: Request,
     db: Session = Depends(get_db),
     _: User = Depends(get_current_admin),
 ) -> list[User]:
@@ -45,7 +50,9 @@ def list_users(
 
 
 @router.post("/users", response_model=StudioUser, status_code=status.HTTP_201_CREATED)
+@limiter.limit("10/minute")
 def invite_user(
+    request: Request,
     body: InviteUserRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_superadmin),
@@ -67,7 +74,9 @@ def invite_user(
 
 
 @router.patch("/users/{user_id}/role", status_code=status.HTTP_200_OK)
+@limiter.limit("20/minute")
 def update_user_role(
+    request: Request,
     user_id: str,
     body: UpdateRoleRequest,
     db: Session = Depends(get_db),
@@ -85,7 +94,9 @@ def update_user_role(
 
 
 @router.patch("/users/{user_id}/status", status_code=status.HTTP_200_OK)
+@limiter.limit("20/minute")
 def update_user_status(
+    request: Request,
     user_id: str,
     body: UpdateStatusRequest,
     db: Session = Depends(get_db),

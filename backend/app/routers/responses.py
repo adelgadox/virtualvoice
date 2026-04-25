@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.dependencies import get_current_user
+from app.dependencies import get_current_user, get_current_admin
 from app.models.comment import Comment
 from app.models.influencer import Influencer
 from app.models.knowledge_entry import KnowledgeEntry
@@ -62,7 +62,7 @@ def list_history(
     request: Request,
     influencer_id: UUID | None = None,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(get_current_admin),
 ):
     query = db.query(PendingResponse).filter(PendingResponse.status != "pending")
     if influencer_id:

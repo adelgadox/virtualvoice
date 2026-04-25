@@ -35,7 +35,7 @@ def list_entries(
 
 @router.post("/", response_model=KnowledgeEntryOut, status_code=status.HTTP_201_CREATED)
 @limiter.limit("30/minute")
-def create_entry(request: Request, body: KnowledgeEntryCreate, db: Session = Depends(get_db), _: User = Depends(get_current_user)):
+def create_entry(request: Request, body: KnowledgeEntryCreate, db: Session = Depends(get_db), _: User = Depends(get_current_admin)):
     entry = KnowledgeEntry(**body.model_dump())
     entry.embedding = try_embed(body.content)
     db.add(entry)
