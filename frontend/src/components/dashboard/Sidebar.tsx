@@ -57,9 +57,11 @@ const PRIMARY_HREFS = ["/dashboard/queue", "/dashboard/influencers", "/dashboard
 
 interface SidebarProps {
   email: string;
+  role?: string;
 }
 
-export default function Sidebar({ email }: SidebarProps) {
+export default function Sidebar({ email, role }: SidebarProps) {
+  const isAdmin = role === "admin" || role === "superadmin";
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
 
@@ -91,6 +93,18 @@ export default function Sidebar({ email }: SidebarProps) {
         </nav>
 
         <div className="px-3 py-4 border-t border-gray-200 dark:border-gray-700">
+          {isAdmin && (
+            <Link
+              href="/studio"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors mb-1"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Studio
+            </Link>
+          )}
           <div className="px-3 py-2 mb-1">
             <p className="text-xs text-gray-400 dark:text-gray-500">Signed in as</p>
             <p className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">{email}</p>
@@ -160,6 +174,19 @@ export default function Sidebar({ email }: SidebarProps) {
                 ))}
               </div>
               <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+                {isAdmin && (
+                  <Link
+                    href="/studio"
+                    onClick={() => setMoreOpen(false)}
+                    className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition-colors mb-1"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Studio
+                  </Link>
+                )}
                 <button
                   onClick={() => signOut({ callbackUrl: "/login" })}
                   className="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"

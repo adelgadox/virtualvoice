@@ -12,6 +12,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (!session?.accessToken) redirect("/login");
 
   const email = session.user?.email ?? "";
+  const role = session.role ?? "user";
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
@@ -25,7 +26,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
       {/* Body */}
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar email={email} />
+        <Sidebar email={email} role={role} />
         <main className="flex-1 overflow-y-auto px-4 py-8 pb-24 md:pb-8">
           <div className="max-w-3xl mx-auto space-y-6">
             {children}
