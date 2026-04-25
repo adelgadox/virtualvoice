@@ -1,4 +1,5 @@
 import logging
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
@@ -77,7 +78,7 @@ def invite_user(
 @limiter.limit("20/minute")
 def update_user_role(
     request: Request,
-    user_id: str,
+    user_id: UUID,
     body: UpdateRoleRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_superadmin),
@@ -85,7 +86,7 @@ def update_user_role(
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    if str(user.id) == str(current_user.id):
+    if user.id == current_user.id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot change your own role")
     user.role = body.role
     db.commit()
@@ -97,7 +98,7 @@ def update_user_role(
 @limiter.limit("20/minute")
 def update_user_status(
     request: Request,
-    user_id: str,
+    user_id: UUID,
     body: UpdateStatusRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin),
@@ -105,7 +106,7 @@ def update_user_status(
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    if str(user.id) == str(current_user.id):
+    if user.id == current_user.id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot change your own status")
     # Admins cannot suspend other admins/superadmins — only superadmin can
     if user.role in ("admin", "superadmin") and current_user.role != "superadmin":

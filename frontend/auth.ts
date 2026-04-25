@@ -64,8 +64,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (extUser?.accessToken) {
         token.accessToken = extUser.accessToken;
       }
-      // Fetch role whenever it's missing (covers existing sessions + new logins)
-      if (token.accessToken && !token.role) {
+      // Re-fetch role on every JWT rotation so demoted admins lose access promptly
+      if (token.accessToken) {
         const res = await fetch(`${API_URL}/auth/me`, {
           headers: { Authorization: `Bearer ${token.accessToken as string}` },
         });
