@@ -119,8 +119,7 @@ async def get_valid_token(account: SocialAccount, db: Session) -> str:
         try:
             new_token = await refresh_long_lived_token(plaintext)
             from app.utils.encryption import encrypt_token
-            from app.config import settings as _settings
-            account.access_token = encrypt_token(new_token) if _settings.token_encryption_key else new_token
+            account.access_token = encrypt_token(new_token)
             account.token_expires_at = now + timedelta(days=_TOKEN_TTL_DAYS)
             db.commit()
             logger.info("Refreshed token for social account %s", account.id)

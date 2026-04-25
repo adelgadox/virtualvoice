@@ -397,9 +397,9 @@
 
 | # | Task | Description | Severity | Status |
 |---|------|-------------|----------|--------|
-| 1 | Enforce token encryption at startup | `TOKEN_ENCRYPTION_KEY` is optional — if unset, Meta access tokens are stored in **plaintext** in the DB. Raise `RuntimeError` in `lifespan` if key is empty or invalid Fernet format. Remove the conditional in `social_accounts.py:132` and `token_manager.py:123` — always encrypt. | 🔴 CRITICAL | ⬜ Pending |
-| 2 | Authenticate Instagram OAuth callback | `GET /social-accounts/instagram/callback` has no auth guard. Add `get_current_user` dependency and cross-check `current_user.id` against `state_data["user_id"]`; reject mismatches with 403. Prevents IDOR via state token interception. | 🔴 CRITICAL | ⬜ Pending |
-| 3 | Validate `llm_provider` against an allowlist | `llm_provider` is a free-form `str` — any admin can set it to an arbitrary value. Change schema to `Literal["gemini", "anthropic", "openai", "deepseek", None]` in `schemas/influencer.py`. Prevents SSRF via env-var-controlled base URL injection. | 🔴 CRITICAL | ⬜ Pending |
+| 1 | Enforce token encryption at startup | `TOKEN_ENCRYPTION_KEY` is optional — if unset, Meta access tokens are stored in **plaintext** in the DB. Raise `RuntimeError` in `lifespan` if key is empty or invalid Fernet format. Remove the conditional in `social_accounts.py:132` and `token_manager.py:123` — always encrypt. | 🔴 CRITICAL | ✅ Done |
+| 2 | Authenticate Instagram OAuth callback | `GET /social-accounts/instagram/callback` has no auth guard. Added `exp` field (10-min window) to state payload + verify `initiating_user_id` is an active DB user on callback. Prevents replayed/stale states and IDOR via deactivated accounts. | 🔴 CRITICAL | ✅ Done |
+| 3 | Validate `llm_provider` against an allowlist | `llm_provider` is a free-form `str` — any admin can set it to an arbitrary value. Changed schema to `Literal["gemini", "anthropic", "openai", "deepseek", None]` in `schemas/influencer.py`. Prevents SSRF via env-var-controlled base URL injection. | 🔴 CRITICAL | ✅ Done |
 
 #### 7.2 — High
 
@@ -418,7 +418,7 @@
 |---|------|-------------|----------|--------|
 | 1 | Use `UUID` type for `user_id` path params in studio | `update_user_role` and `update_user_status` declare `user_id: str` — FastAPI skips UUID validation. Change to `user_id: UUID` in `routers/studio.py:71,89` and update the equality check to `user.id == user_id`. | 🟡 MEDIUM | ⬜ Pending |
 | 2 | Add denylist cleanup cron job | `token_denylist` table grows unboundedly — no cleanup of expired entries. Add a periodic task (similar to `token_renewal_loop`) that deletes rows where `expires_at < now()`. The index `ix_token_denylist_expires_at` already exists. | 🟡 MEDIUM | ⬜ Pending |
-| 3 | Validate Fernet key format at startup | `utils/encryption.py` calls `Fernet(key)` without verifying the key is valid. Add a startup check in `lifespan`: attempt `Fernet(settings.token_encryption_key.encode())` and raise `RuntimeError` with a clear message on failure. | 🟡 MEDIUM | ⬜ Pending |
+| 3 | Validate Fernet key format at startup | `utils/encryption.py` calls `Fernet(key)` without verifying the key is valid. Add a startup check in `lifespan`: attempt `Fernet(settings.token_encryption_key.encode())` and raise `RuntimeError` with a clear message on failure. | 🟡 MEDIUM | ✅ Done |
 | 4 | Re-validate session role on each request | `auth.ts` caches `role` in the NextAuth JWT indefinitely (`!token.role` guard). A demoted admin keeps Studio access until session expiry. Remove the `!token.role` guard so role is re-fetched on every JWT rotation, or set a short `maxAge` on the NextAuth session. | 🟡 MEDIUM | ⬜ Pending |
 | 5 | Sanitize OAuth error reflected as toast | `influencers/page.tsx:51` renders `oauthError` query param as toast text with no sanitization (`messages[oauthError] ?? \`Error: ${oauthError}\``). Replace the fallback with a generic message: `"An unexpected error occurred. Please try again."` | 🟡 MEDIUM | ⬜ Pending |
 | 6 | Add HSTS header to backend middleware | `SecurityHeadersMiddleware` in `main.py` is missing `Strict-Transport-Security`. Add `response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"` (skip in `settings.debug` mode). | 🟡 MEDIUM | ⬜ Pending |
@@ -434,4 +434,4 @@
 
 ---
 
-*Last updated: 2026-04-25 (Phase 4 complete · Phase 5.5 expanded with Generate Voices UI + infrastructure architecture · Phase 6 security hardening complete · /studio superadmin section added · Phase 7 security review findings documented)*
+*Last updated: 2026-04-25 (Phase 4 complete · Phase 5.5 expanded with Generate Voices UI + infrastructure architecture · Phase 6 security hardening complete · /studio superadmin section added · Phase 7 security review findings documented · Phase 7 CRITICAL items resolved)*

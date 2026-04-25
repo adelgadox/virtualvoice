@@ -17,8 +17,25 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 
+def validate_encryption_key() -> None:
+    """Validate TOKEN_ENCRYPTION_KEY at startup. Raises RuntimeError if missing or invalid."""
+    key = settings.token_encryption_key
+    if not key:
+        raise RuntimeError(
+            "TOKEN_ENCRYPTION_KEY is not set. "
+            "Generate one with: python3 -c \"from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())\""
+        )
+    try:
+        Fernet(key.encode())
+    except Exception as exc:
+        raise RuntimeError(f"TOKEN_ENCRYPTION_KEY is not a valid Fernet key: {exc}") from exc
+
+
 def _fernet() -> Fernet:
-    return Fernet(settings.token_encryption_key.encode())
+    key = settings.token_encryption_key
+    if not key:
+        raise RuntimeError("TOKEN_ENCRYPTION_KEY is not configured — cannot encrypt/decrypt tokens")
+    return Fernet(key.encode())
 
 
 def encrypt_token(plaintext: str) -> str:

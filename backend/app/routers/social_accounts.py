@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 from urllib.parse import quote
 from uuid import UUID
 
@@ -57,11 +58,12 @@ def instagram_authorize(
     if not influencer:
         raise HTTPException(status_code=404, detail="Influencer not found")
 
-    # State encodes influencer_id + user_id + HMAC to prevent CSRF and bind the
-    # flow to the initiating user. user_id is verified on callback for auditability.
+    # State encodes influencer_id + user_id + expiry + HMAC to prevent CSRF,
+    # bind the flow to the initiating user, and reject replayed/stale states.
     state_payload = json.dumps({
         "influencer_id": str(influencer_id),
         "user_id": str(current_user.id),
+        "exp": int(time.time()) + 600,  # 10-minute window
     })
     signature = sign_state(state_payload)
     state = f"{state_payload}|{signature}"
@@ -100,11 +102,24 @@ async def instagram_callback(
         if not verify_state(state_payload, signature):
             raise ValueError("State signature mismatch")
         state_data = json.loads(state_payload)
+        exp = state_data.get("exp", 0)
+        if int(time.time()) > exp:
+            raise ValueError("State expired")
         influencer_id = UUID(state_data["influencer_id"])
         initiating_user_id: str | None = state_data.get("user_id")
     except Exception as exc:
         logger.warning("Invalid OAuth state: %s", exc)
         return RedirectResponse(f"{redirect_base}?oauth_error=invalid_state")
+
+    # Verify initiating user is a real, active account
+    if initiating_user_id:
+        initiating_user = db.query(User).filter(
+            User.id == initiating_user_id,
+            User.is_active == True,  # noqa: E712
+        ).first()
+        if not initiating_user:
+            logger.warning("OAuth callback: initiating user %s not found or inactive", initiating_user_id)
+            return RedirectResponse(f"{redirect_base}?oauth_error=unauthorized")
 
     influencer = db.query(Influencer).filter(Influencer.id == influencer_id).first()
     if not influencer:
@@ -129,7 +144,7 @@ async def instagram_callback(
         ).first()
 
         token_expires_at = compute_token_expiry()
-        encrypted = encrypt_token(account["page_access_token"]) if settings.token_encryption_key else account["page_access_token"]
+        encrypted = encrypt_token(account["page_access_token"])
         if existing:
             existing.access_token = encrypted
             existing.token_expires_at = token_expires_at
