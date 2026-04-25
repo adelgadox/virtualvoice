@@ -334,6 +334,22 @@
 | # | Task | Description | Complexity | Status |
 |---|------|-------------|------------|--------|
 | 1 | Restrict user registration | `POST /auth/register` is fully public — any user can register and immediately approve/publish responses. Add admin-controlled allow-list or invite token | 🟢 | ✅ Done |
+
+> **Re-enabling open registration (when needed):**
+> The platform is currently invite-only. To re-open self-serve registration:
+> 1. **Backend** — set `REGISTRATION_ENABLED=true` in Railway env vars (already implemented in `config.py`)
+> 2. **Frontend** — restore the register link in `frontend/src/app/(auth)/login/page.tsx`:
+>    ```tsx
+>    import Link from "next/link";
+>    // ...inside the card, after <SSOButtons />:
+>    <p className="text-center text-sm text-gray-500">
+>      No account yet?{" "}
+>      <Link href="/register" className="text-brand hover:underline font-medium">
+>        Create one
+>      </Link>
+>    </p>
+>    ```
+>    The `/register` page (`frontend/src/app/(auth)/register/page.tsx`) remains intact.
 | 2 | Add admin guards to destructive endpoints | `DELETE /social-accounts/{id}`, `PATCH/DELETE /knowledge/{id}` — all lack ownership checks (IDOR). Require `is_admin=True` | 🟢 | ✅ Done |
 | 3 | Derive `approved_by` from session | Currently a free-form client-supplied string — attacker can set any value. Use `current_user.email` server-side instead | 🟢 | ✅ Done |
 | 4 | Separate OAuth state secret from JWT secret | `sign_state()` reuses `settings.secret_key`. Add dedicated `META_OAUTH_STATE_SECRET` env var | 🟢 | ✅ Done |
@@ -361,4 +377,4 @@
 
 ---
 
-*Last updated: 2026-04-24 (Phase 4 complete · Phase 5.5 expanded with Generate Voices UI + infrastructure architecture · Phase 6 security hardening complete)*
+*Last updated: 2026-04-25 (Phase 4 complete · Phase 5.5 expanded with Generate Voices UI + infrastructure architecture · Phase 6 security hardening complete · /studio superadmin section added)*
