@@ -81,6 +81,9 @@ if _railway_env == "production" and settings.debug:
         "Set DEBUG=false in your Railway environment variables."
     )
 
+from app.utils.encryption import validate_encryption_key  # noqa: E402
+validate_encryption_key()
+
 app = FastAPI(title=settings.app_name, debug=settings.debug, lifespan=lifespan)
 app.state.limiter = limiter
 

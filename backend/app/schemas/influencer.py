@@ -1,3 +1,4 @@
+from typing import Literal
 from pydantic import BaseModel, field_validator
 from uuid import UUID
 from datetime import datetime
@@ -5,10 +6,13 @@ from datetime import datetime
 from app.utils.sanitize import strip_html, validate_slug
 
 
+_LLM_PROVIDER = Literal["gemini", "anthropic", "openai", "deepseek"]
+
+
 class InfluencerBase(BaseModel):
     name: str
     slug: str
-    llm_provider: str | None = None
+    llm_provider: _LLM_PROVIDER | None = None
     system_prompt_core: str = ""
     current_context: str | None = None
     is_active: bool = True
@@ -40,7 +44,7 @@ class InfluencerCreate(InfluencerBase):
 
 class InfluencerUpdate(BaseModel):
     name: str | None = None
-    llm_provider: str | None = None
+    llm_provider: _LLM_PROVIDER | None = None
     system_prompt_core: str | None = None
     current_context: str | None = None
     is_active: bool | None = None
