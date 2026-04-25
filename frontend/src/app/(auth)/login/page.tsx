@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import SSOButtons from "@/components/ui/SSOButtons";
 
 export default function LoginPage() {
@@ -94,13 +93,6 @@ export default function LoginPage() {
       </div>
 
       <SSOButtons />
-
-      <p className="text-center text-sm text-gray-500">
-        No account yet?{" "}
-        <Link href="/register" className="text-brand hover:underline font-medium">
-          Create one
-        </Link>
-      </p>
     </div>
   );
 }
