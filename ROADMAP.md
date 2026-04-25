@@ -338,7 +338,16 @@
 > **Re-enabling open registration (when needed):**
 > The platform is currently invite-only. To re-open self-serve registration:
 > 1. **Backend** — set `REGISTRATION_ENABLED=true` in Railway env vars (already implemented in `config.py`)
-> 2. **Frontend** — restore the register link in `frontend/src/app/(auth)/login/page.tsx`:
+> 2. **Frontend middleware** — remove the `/register` redirect block in `frontend/src/middleware.ts` and add `"/register"` back to `PUBLIC_ROUTES`:
+>    ```ts
+>    // Remove this block:
+>    if (pathname.startsWith("/register")) {
+>      return NextResponse.redirect(new URL("/login", req.url));
+>    }
+>    // Restore:
+>    const PUBLIC_ROUTES = ["/login", "/register"];
+>    ```
+> 3. **Login link** — restore the register link in `frontend/src/app/(auth)/login/page.tsx`:
 >    ```tsx
 >    import Link from "next/link";
 >    // ...inside the card, after <SSOButtons />:
