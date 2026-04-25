@@ -2,6 +2,7 @@ import { auth } from "@/../auth";
 import type { StudioUser } from "@/types/api";
 import UserRoleSelect from "@/components/studio/UserRoleSelect";
 import UserStatusToggle from "@/components/studio/UserStatusToggle";
+import InviteUserForm from "@/components/studio/InviteUserForm";
 
 const API_URL = process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -21,11 +22,13 @@ export default async function StudioUsersPage() {
   const currentUserId = (session as any)?.user?.id ?? "";
 
   return (
-    <div>
-      <div className="mb-6">
+    <div className="space-y-6">
+      <div>
         <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Users</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{users.length} registered accounts.</p>
       </div>
+
+      {isSuperadmin && <InviteUserForm />}
 
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         <table className="w-full text-sm">
@@ -76,6 +79,7 @@ export default async function StudioUsersPage() {
       </div>
     </div>
   );
+
 }
 
 function RoleBadge({ role }: { role: string }) {

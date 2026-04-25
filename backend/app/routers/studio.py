@@ -8,6 +8,7 @@ from app.dependencies import get_current_admin, get_current_superadmin
 from app.models.influencer import Influencer
 from app.models.user import User
 from app.schemas.studio import (
+    InviteUserRequest,
     StudioStats,
     StudioUser,
     UpdateRoleRequest,
@@ -41,6 +42,28 @@ def list_users(
     _: User = Depends(get_current_admin),
 ) -> list[User]:
     return db.query(User).order_by(User.created_at.desc()).all()
+
+
+@router.post("/users", response_model=StudioUser, status_code=status.HTTP_201_CREATED)
+def invite_user(
+    body: InviteUserRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_superadmin),
+) -> User:
+    existing = db.query(User).filter(User.email == body.email).first()
+    if existing:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
+    user = User(
+        email=body.email,
+        role=body.role,
+        auth_provider="google",  # invited users must sign in via Google SSO
+        is_active=True,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    logger.info("Superadmin %s invited user %s with role %s", current_user.email, user.email, user.role)
+    return user
 
 
 @router.patch("/users/{user_id}/role", status_code=status.HTTP_200_OK)

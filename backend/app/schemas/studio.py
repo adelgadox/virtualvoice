@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 
 class StudioStats(BaseModel):
@@ -31,3 +31,8 @@ class UpdateRoleRequest(BaseModel):
 
 class UpdateStatusRequest(BaseModel):
     is_active: bool
+
+
+class InviteUserRequest(BaseModel):
+    email: EmailStr
+    role: Literal["user", "admin"] = "user"
