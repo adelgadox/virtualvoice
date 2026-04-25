@@ -63,9 +63,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       const extUser = user as ExtendedUser | undefined;
       if (extUser?.accessToken) {
         token.accessToken = extUser.accessToken;
-        // Fetch role from backend on first sign-in
+      }
+      // Fetch role whenever it's missing (covers existing sessions + new logins)
+      if (token.accessToken && !token.role) {
         const res = await fetch(`${API_URL}/auth/me`, {
-          headers: { Authorization: `Bearer ${extUser.accessToken}` },
+          headers: { Authorization: `Bearer ${token.accessToken as string}` },
         });
         if (res.ok) {
           const profile = await res.json();

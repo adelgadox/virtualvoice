@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Literal
+from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -12,7 +13,7 @@ class StudioStats(BaseModel):
 
 
 class StudioUser(BaseModel):
-    id: str
+    id: UUID
     email: str
     full_name: str | None = None
     avatar_url: str | None = None
