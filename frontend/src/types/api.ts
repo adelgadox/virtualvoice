@@ -48,6 +48,24 @@ export interface Influencer {
   updated_at: string | null;
 }
 
+export interface StudioUser {
+  id: string;
+  email: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  auth_provider: string;
+  role: "user" | "admin" | "superadmin";
+  is_active: boolean;
+  created_at: string | null;
+}
+
+export interface StudioStats {
+  total_users: number;
+  active_users: number;
+  total_influencers: number;
+  active_influencers: number;
+}
+
 export interface InfluencerMetrics {
   influencer_id: string;
   influencer_name: string;

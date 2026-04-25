@@ -41,7 +41,7 @@ logging.basicConfig(
 logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
-from app.routers import auth, influencers, responses, knowledge, webhooks, social_accounts, metrics  # noqa: E402
+from app.routers import auth, influencers, responses, knowledge, webhooks, social_accounts, metrics, studio  # noqa: E402
 from app.models import influencer as _influencer_model  # noqa: F401, E402
 from app.models import social_account as _social_account_model  # noqa: F401, E402
 from app.models import comment as _comment_model  # noqa: F401, E402
@@ -113,6 +113,7 @@ app.include_router(knowledge.router)
 app.include_router(webhooks.router)
 app.include_router(social_accounts.router)
 app.include_router(metrics.router)
+app.include_router(studio.router)
 
 
 @app.get("/health")
