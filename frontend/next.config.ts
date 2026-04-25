@@ -1,17 +1,5 @@
 import type { NextConfig } from "next";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
-// Extract origin (scheme + host) from the API URL for CSP connect-src
-function apiOrigin(url: string): string {
-  try {
-    const { origin } = new URL(url);
-    return origin;
-  } catch {
-    return url;
-  }
-}
-
 const isDev = process.env.NODE_ENV === "development";
 
 const nextConfig: NextConfig = {
@@ -47,31 +35,7 @@ const nextConfig: NextConfig = {
               },
             ]),
 
-        // Content Security Policy
-        {
-          key: "Content-Security-Policy",
-          value: [
-            "default-src 'self'",
-            // Scripts: self + Next.js inline scripts (nonce not yet wired, so unsafe-inline needed for now)
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-            // Styles: self + inline styles used by Tailwind
-            "style-src 'self' 'unsafe-inline'",
-            // Images: self + data URIs (avatars) + Google profile pictures
-            "img-src 'self' data: https://lh3.googleusercontent.com https://graph.facebook.com",
-            // Fonts: self only
-            "font-src 'self'",
-            // API calls + NextAuth + Google OAuth
-            `connect-src 'self' ${apiOrigin(API_URL)} https://accounts.google.com`,
-            // No iframes allowed
-            "frame-src 'none'",
-            // No plugins
-            "object-src 'none'",
-            // Restrict base tag
-            "base-uri 'self'",
-            // Only allow form submissions to self
-            "form-action 'self'",
-          ].join("; "),
-        },
+        // CSP is set per-request with a nonce in middleware.ts — not here
       ],
     },
   ],

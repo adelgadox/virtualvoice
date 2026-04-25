@@ -11,7 +11,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
-from app.dependencies import get_current_user
+from app.dependencies import get_current_user, get_current_admin
 from app.database import get_db
 
 
@@ -36,6 +36,7 @@ def _override_auth(db=None):
     """Override FastAPI dependencies so no real DB or JWT is needed."""
     user = _fake_user()
     app.dependency_overrides[get_current_user] = lambda: user
+    app.dependency_overrides[get_current_admin] = lambda: user
     app.dependency_overrides[get_db] = lambda: (db or _fake_db())
     return user
 
@@ -288,12 +289,12 @@ class TestWebhookEndpoints:
 
         with TestClient(app) as client:
             res = client.get(
-                "/webhooks/meta?hub.mode=subscribe&hub.challenge=abc123&hub.verify_token=mytoken"
+                "/webhooks/meta?hub.mode=subscribe&hub.challenge=123456&hub.verify_token=mytoken"
             )
 
         cfg.settings.meta_webhook_verify_token = original
         assert res.status_code == 200
-        assert res.text == "abc123"
+        assert res.text == "123456"
 
     def test_meta_verify_wrong_token_returns_403(self):
         import app.config as cfg
@@ -302,7 +303,7 @@ class TestWebhookEndpoints:
 
         with TestClient(app) as client:
             res = client.get(
-                "/webhooks/meta?hub.mode=subscribe&hub.challenge=x&hub.verify_token=wrong"
+                "/webhooks/meta?hub.mode=subscribe&hub.challenge=999&hub.verify_token=wrong"
             )
 
         cfg.settings.meta_webhook_verify_token = original

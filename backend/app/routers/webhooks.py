@@ -32,6 +32,8 @@ def meta_webhook_verify(
     hub_verify_token: str | None = Query(default=None, alias="hub.verify_token"),
 ):
     """Meta webhook verification challenge (hub.mode / hub.challenge / hub.verify_token)."""
+    if hub_challenge is None or not hub_challenge.isdigit() or len(hub_challenge) > 20:
+        raise HTTPException(status_code=400, detail="Invalid hub.challenge")
     if hub_mode == "subscribe" and hub_verify_token == settings.meta_webhook_verify_token:
         return Response(content=hub_challenge, media_type="text/plain")
     raise HTTPException(status_code=403, detail="Verification failed")

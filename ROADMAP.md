@@ -405,12 +405,12 @@
 
 | # | Task | Description | Severity | Status |
 |---|------|-------------|----------|--------|
-| 1 | Add rate limiting to all `/studio` endpoints | None of the five studio routes have `@limiter.limit(...)`. Add `request: Request` param and apply `@limiter.limit("30/minute")` to stats, list, invite, role-change, and status-change routes in `routers/studio.py`. | 🟠 HIGH | ⬜ Pending |
-| 2 | Remove `approved_by` email from response history | `GET /responses/history` is accessible to all users and returns `approved_by` (staff email). Replace email with user UUID, or omit the field from `PendingResponseOut`, or restrict the endpoint to `get_current_admin`. | 🟠 HIGH | ⬜ Pending |
-| 3 | Upgrade Next.js to patch SSRF and DoS CVEs | `next@15.3.8` has multiple HIGH/CRITICAL CVEs including SSRF (`GHSA-4342-x723-ch2f`), HTTP request smuggling, and DoS via Server Components. Run `npm install next@latest eslint-config-next@latest` in `frontend/`. | 🟠 HIGH | ⬜ Pending |
-| 4 | Validate `hub_challenge` in webhook endpoint | `GET /webhooks/meta` reflects `hub.challenge` without length or character validation. Add `if not hub_challenge.isdigit() or len(hub_challenge) > 20: raise HTTPException(400)` in `routers/webhooks.py:36`. | 🟠 HIGH | ⬜ Pending |
-| 5 | Restrict knowledge entry creation to admins | `POST /knowledge/` accepts any authenticated user and any `influencer_id` — any user can poison any influencer's RAG context. Change the dependency from `get_current_user` to `get_current_admin` in `routers/knowledge.py:36`. | 🟠 HIGH | ⬜ Pending |
-| 6 | Replace `unsafe-eval` + `unsafe-inline` in CSP with nonces | `next.config.ts` CSP uses `'unsafe-eval'` and `'unsafe-inline'` for `script-src`, nullifying XSS protection. Implement Next.js nonce-based CSP; remove both unsafe directives. | 🟠 HIGH | ⬜ Pending |
+| 1 | Add rate limiting to all `/studio` endpoints | None of the five studio routes have `@limiter.limit(...)`. Add `request: Request` param and apply `@limiter.limit("30/minute")` to stats, list, invite, role-change, and status-change routes in `routers/studio.py`. | 🟠 HIGH | ✅ Done |
+| 2 | Remove `approved_by` email from response history | `GET /responses/history` is accessible to all users and returns `approved_by` (staff email). Restricted endpoint to `get_current_admin` in `routers/responses.py`. | 🟠 HIGH | ✅ Done |
+| 3 | Upgrade Next.js to patch SSRF and DoS CVEs | `next@15.3.8` has multiple HIGH/CRITICAL CVEs including SSRF (`GHSA-4342-x723-ch2f`), HTTP request smuggling, and DoS via Server Components. Upgraded to `next@16.2.4`. | 🟠 HIGH | ✅ Done |
+| 4 | Validate `hub_challenge` in webhook endpoint | `GET /webhooks/meta` reflects `hub.challenge` without length or character validation. Added `isdigit() + len > 20` check before reflecting in `routers/webhooks.py`. | 🟠 HIGH | ✅ Done |
+| 5 | Restrict knowledge entry creation to admins | `POST /knowledge/` accepts any authenticated user and any `influencer_id` — any user can poison any influencer's RAG context. Changed dependency from `get_current_user` to `get_current_admin` in `routers/knowledge.py`. | 🟠 HIGH | ✅ Done |
+| 6 | Replace `unsafe-eval` + `unsafe-inline` in CSP with nonces | `next.config.ts` CSP uses `'unsafe-eval'` and `'unsafe-inline'` for `script-src`, nullifying XSS protection. Moved CSP to `middleware.ts` with per-request nonce; removed both unsafe directives from `script-src`. | 🟠 HIGH | ✅ Done |
 
 #### 7.3 — Medium
 
