@@ -72,7 +72,9 @@ def instagram_authorize(
 
 
 @router.get("/instagram/callback")
+@limiter.limit("10/minute")
 async def instagram_callback(
+    request: Request,
     code: str | None = Query(default=None),
     state: str | None = Query(default=None),
     error: str | None = Query(default=None),

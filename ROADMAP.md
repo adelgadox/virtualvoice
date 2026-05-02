@@ -462,12 +462,12 @@
 
 | # | Task | Description | Severity | Status |
 |---|------|-------------|----------|--------|
-| 1 | Add max-length cap on incoming webhook comment content | `webhook_handler._handle_comment()` stores `value.get("message", "")` without a length guard. An attacker who controls an Instagram account can post a multi-megabyte comment, triggering expensive LLM calls and inflating DB storage. Fix: `content = value.get("message", "")[:1000]` before constructing the `Comment` model. | 🟡 MEDIUM | ⬜ Pending |
-| 2 | Add max-length constraint on knowledge entry `content` | `schemas/knowledge.py:KnowledgeEntryBase` has no max length on `content`. Admins can store arbitrarily large entries that inflate DB size and LLM context windows on every RAG retrieval. Fix: `content: str = Field(max_length=10_000)` with corresponding DB column constraint in a migration. | 🟡 MEDIUM | ⬜ Pending |
-| 3 | Restrict `GET /metrics/` to admin users | `metrics.py:33` uses `get_current_user` — any authenticated user can retrieve all influencer names, slugs, and approval/edit/ignore rates. This is internal business intelligence. Fix: change dependency to `get_current_admin`. | 🟡 MEDIUM | ⬜ Pending |
-| 4 | Consolidate Graph API version across all Meta modules | Three files use different Graph API versions: `core/meta/oauth.py:21` → `v19.0`, `core/meta/token_manager.py:36` → `v19.0`, `core/meta/graph_api.py:7` → `v21.0`. Meta deprecates old API versions aggressively. Fix: define `GRAPH_API_VERSION = "v21.0"` in `core/meta/__init__.py` and import it in all three files. | 🟡 MEDIUM | ⬜ Pending |
-| 5 | Add rate limit to OAuth callback endpoint | `GET /social-accounts/instagram/callback` (`social_accounts.py:74`) has no `@limiter.limit()` decorator. Carries over from Phase 7.4.4. Fix: add `@limiter.limit("10/minute")` and `request: Request` parameter. | 🟡 MEDIUM | ⬜ Pending |
-| 6 | Remove deprecated `is_admin` field from `UserOut` | `schemas/auth.py:39` exposes `is_admin: bool` which reads `User.is_admin` (always `False`, never written by any router since the role-based migration). Misleads API consumers into thinking it has meaning. Carries over from Phase 7.4.2. Fix: remove `is_admin` from `UserOut`; drop column via Alembic migration. | 🟡 MEDIUM | ⬜ Pending |
+| 1 | Add max-length cap on incoming webhook comment content | `webhook_handler._handle_comment()` stores `value.get("message", "")` without a length guard. An attacker who controls an Instagram account can post a multi-megabyte comment, triggering expensive LLM calls and inflating DB storage. Fix: `content = value.get("message", "")[:1000]` before constructing the `Comment` model. | 🟡 MEDIUM | ✅ Done |
+| 2 | Add max-length constraint on knowledge entry `content` | `schemas/knowledge.py:KnowledgeEntryBase` has no max length on `content`. Admins can store arbitrarily large entries that inflate DB size and LLM context windows on every RAG retrieval. Fix: `content: str = Field(max_length=10_000)` with corresponding DB column constraint in a migration. | 🟡 MEDIUM | ✅ Done |
+| 3 | Restrict `GET /metrics/` to admin users | `metrics.py:33` uses `get_current_user` — any authenticated user can retrieve all influencer names, slugs, and approval/edit/ignore rates. This is internal business intelligence. Fix: change dependency to `get_current_admin`. | 🟡 MEDIUM | ✅ Done |
+| 4 | Consolidate Graph API version across all Meta modules | Three files use different Graph API versions: `core/meta/oauth.py:21` → `v19.0`, `core/meta/token_manager.py:36` → `v19.0`, `core/meta/graph_api.py:7` → `v21.0`. Meta deprecates old API versions aggressively. Fix: define `GRAPH_API_VERSION = "v21.0"` in `core/meta/__init__.py` and import it in all three files. | 🟡 MEDIUM | ✅ Done |
+| 5 | Add rate limit to OAuth callback endpoint | `GET /social-accounts/instagram/callback` (`social_accounts.py:74`) has no `@limiter.limit()` decorator. Carries over from Phase 7.4.4. Fix: add `@limiter.limit("10/minute")` and `request: Request` parameter. | 🟡 MEDIUM | ✅ Done |
+| 6 | Remove deprecated `is_admin` field from `UserOut` | `schemas/auth.py:39` exposes `is_admin: bool` which reads `User.is_admin` (always `False`, never written by any router since the role-based migration). Misleads API consumers into thinking it has meaning. Carries over from Phase 7.4.2. Fix: remove `is_admin` from `UserOut`; drop column via Alembic migration. | 🟡 MEDIUM | ✅ Done |
 
 #### 8.4 — Low
 
@@ -480,4 +480,4 @@
 
 ---
 
-*Last updated: 2026-05-02 (Phase 8 security review complete — 2 critical · 4 high · 6 medium · 4 low findings documented · Phase 8 CRITICAL items resolved)*
+*Last updated: 2026-05-02 (Phase 8 security review complete — 2 critical · 4 high · 6 medium · 4 low findings documented · Phase 8 CRITICAL + MEDIUM items resolved)*

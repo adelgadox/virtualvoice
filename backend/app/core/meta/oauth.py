@@ -18,7 +18,8 @@ from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-_GRAPH = "https://graph.facebook.com/v19.0"
+from app.core.meta import GRAPH_API_VERSION
+_GRAPH = f"https://graph.facebook.com/{GRAPH_API_VERSION}"
 _SCOPES = [
     "instagram_basic",
     "instagram_manage_comments",

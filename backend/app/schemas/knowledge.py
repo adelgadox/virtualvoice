@@ -1,13 +1,15 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 from uuid import UUID
 from datetime import datetime
 
 from app.utils.sanitize import strip_html
 
+_CONTENT_MAX_LENGTH = 10_000
+
 
 class KnowledgeEntryBase(BaseModel):
     category: str
-    content: str
+    content: str = Field(max_length=_CONTENT_MAX_LENGTH)
     is_active: bool = True
 
     @field_validator("content", mode="before")
@@ -22,7 +24,7 @@ class KnowledgeEntryCreate(KnowledgeEntryBase):
 
 class KnowledgeEntryUpdate(BaseModel):
     category: str | None = None
-    content: str | None = None
+    content: str | None = Field(default=None, max_length=_CONTENT_MAX_LENGTH)
     is_active: bool | None = None
 
     @field_validator("content", mode="before")

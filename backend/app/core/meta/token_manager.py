@@ -32,7 +32,8 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-_GRAPH = "https://graph.facebook.com/v19.0"
+from app.core.meta import GRAPH_API_VERSION
+_GRAPH = f"https://graph.facebook.com/{GRAPH_API_VERSION}"
 _TOKEN_TTL_DAYS = 60
 
 
