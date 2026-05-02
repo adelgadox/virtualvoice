@@ -43,12 +43,17 @@ async def _handle_comment(value: dict, object_type: str | None, db: Session) -> 
         logger.warning("No social account found for account_id=%s", account_id)
         return
 
+    # Truncate comment content to prevent prompt injection via oversized or
+    # adversarial payloads injected into the LLM user turn.
+    raw_content = value.get("message", "")
+    content = raw_content[:1000]
+
     comment = Comment(
         social_account_id=social_account.id,
         platform_comment_id=platform_comment_id,
         author_username=value.get("from", {}).get("name"),
         author_platform_id=value.get("from", {}).get("id"),
-        content=value.get("message", ""),
+        content=content,
         post_id=value.get("media", {}).get("id"),
     )
     db.add(comment)
