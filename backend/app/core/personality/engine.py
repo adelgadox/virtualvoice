@@ -28,10 +28,24 @@ class PersonalityEngine:
             .first()
         )
         if social_account:
-            recent_posts = await get_recent_posts(
-                account_id=social_account.account_id,
-                access_token=social_account.access_token,
-            )
+            from app.core.meta.token_manager import get_valid_token, TokenInvalidError
+            try:
+                plaintext_token = await get_valid_token(social_account, self._db)
+                recent_posts = await get_recent_posts(
+                    account_id=social_account.account_id,
+                    access_token=plaintext_token,
+                )
+            except TokenInvalidError:
+                logger.warning(
+                    "Skipping recent posts for influencer %s: token invalid — re-auth required",
+                    influencer.id,
+                )
+            except Exception:
+                logger.warning(
+                    "Skipping recent posts for influencer %s: unexpected error",
+                    influencer.id,
+                    exc_info=True,
+                )
 
         system_prompt, user_message = build_prompt(
             influencer=influencer,
