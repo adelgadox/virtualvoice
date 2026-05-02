@@ -3,7 +3,8 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
-GRAPH_API_BASE = "https://graph.facebook.com/v21.0"
+from app.core.meta import GRAPH_API_VERSION
+GRAPH_API_BASE = f"https://graph.facebook.com/{GRAPH_API_VERSION}"
 
 
 async def publish_reply(comment_id: str, message: str, access_token: str) -> str:

@@ -4,7 +4,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.dependencies import get_current_user
+from app.dependencies import get_current_admin
 from app.models.influencer import Influencer
 from app.models.pending_response import PendingResponse
 from app.models.user import User
@@ -32,7 +32,7 @@ class InfluencerMetrics(BaseModel):
 def get_metrics(
     request: Request,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(get_current_admin),
 ) -> list[InfluencerMetrics]:
     """Return approval/edit/ignore metrics grouped by influencer."""
     influencers = db.query(Influencer).order_by(Influencer.name).all()

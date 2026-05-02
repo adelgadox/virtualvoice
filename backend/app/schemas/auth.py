@@ -36,7 +36,6 @@ class UserOut(BaseModel):
     full_name: str | None = None
     avatar_url: str | None = None
     auth_provider: str
-    is_admin: bool
     role: str
 
     model_config = {"from_attributes": True}
