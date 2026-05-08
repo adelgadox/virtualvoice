@@ -1,6 +1,5 @@
 import { auth } from "@/../auth";
 import { NextResponse } from "next/server";
-import { randomBytes } from "crypto";
 
 const PUBLIC_ROUTES = ["/login"];
 
@@ -48,7 +47,7 @@ export default auth((req) => {
   }
 
   // Generate a per-request nonce and inject it into the CSP header
-  const nonce = randomBytes(16).toString("base64");
+  const nonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))));
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set("x-nonce", nonce);
 
