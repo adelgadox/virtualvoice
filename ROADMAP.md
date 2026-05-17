@@ -511,7 +511,7 @@
 
 ---
 
-### Phase 8 — Security Hardening Round 3 ⬜
+### Phase 8 — Security Hardening Round 3 🔧
 
 > Full security review conducted 2026-05-02 by Senior Cyber Security Analyst.
 > Covers backend (FastAPI/Python), frontend (Next.js/TypeScript), LLM pipeline, and OAuth flows.
@@ -528,10 +528,10 @@
 
 | # | Task | Description | Severity | Status |
 |---|------|-------------|----------|--------|
-| 1 | Replace in-memory rate limiter with Redis storage | `slowapi` uses `MemoryStorage` by default (`utils/rate_limit.py`). Each Railway replica has an independent counter — distributing requests across instances bypasses all rate limits entirely. Fix: configure `slowapi` with a Redis backend (`slowapi.util.get_remote_address` + `limits[redis]`) using Railway's Redis addon. Add `REDIS_URL` env var. | 🟠 HIGH | ⬜ Pending |
-| 2 | Suppress raw exception details in 502 response | `responses.py:115-118` returns `f"Failed to publish reply to Meta: {exc}"`. Meta API error bodies can include access token fragments, account IDs, or internal details. Fix: log the full exception server-side and return a generic `"Failed to publish the reply. Please try again."` message to the client. | 🟠 HIGH | ⬜ Pending |
-| 3 | Remove `_state_secret()` fallback to JWT secret | `core/meta/oauth.py:117` returns `(settings.meta_oauth_state_secret or settings.secret_key).encode()`. If `META_OAUTH_STATE_SECRET` is unset, the same key signs both JWTs and OAuth state — a leaked JWT secret directly compromises CSRF protection on the Instagram OAuth flow. Fix: remove the `or settings.secret_key` fallback; raise `RuntimeError` at startup (in `validate_encryption_key()` or separately) if `meta_oauth_state_secret` is empty in production. Carried from Phase 7.4.3 (re-classified from LOW to HIGH). | 🟠 HIGH | ⬜ Pending |
-| 4 | Add pagination to `/studio/users` list endpoint | `studio.py:50` executes `db.query(User).order_by(...).all()` with no `.limit()`. A superadmin with a large user base causes unbounded memory allocation per request — an admin-level application DoS. Fix: add `.limit(500)` and optional `skip`/`limit` query params. | 🟠 HIGH | ⬜ Pending |
+| 1 | Replace in-memory rate limiter with Redis storage | `slowapi` uses `MemoryStorage` by default (`utils/rate_limit.py`). Each Railway replica has an independent counter — distributing requests across instances bypasses all rate limits entirely. Fix: configure `slowapi` with a Redis backend (`slowapi.util.get_remote_address` + `limits[redis]`) using Railway's Redis addon. Add `REDIS_URL` env var. | 🟠 HIGH | ✅ Done |
+| 2 | Suppress raw exception details in 502 response | `responses.py:115-118` returns `f"Failed to publish reply to Meta: {exc}"`. Meta API error bodies can include access token fragments, account IDs, or internal details. Fix: log the full exception server-side and return a generic `"Failed to publish the reply. Please try again."` message to the client. | 🟠 HIGH | ✅ Done |
+| 3 | Remove `_state_secret()` fallback to JWT secret | `core/meta/oauth.py:117` returns `(settings.meta_oauth_state_secret or settings.secret_key).encode()`. If `META_OAUTH_STATE_SECRET` is unset, the same key signs both JWTs and OAuth state — a leaked JWT secret directly compromises CSRF protection on the Instagram OAuth flow. Fix: remove the `or settings.secret_key` fallback; raise `RuntimeError` at startup (in `validate_encryption_key()` or separately) if `meta_oauth_state_secret` is empty in production. Carried from Phase 7.4.3 (re-classified from LOW to HIGH). | 🟠 HIGH | ✅ Done |
+| 4 | Add pagination to `/studio/users` list endpoint | `studio.py:50` executes `db.query(User).order_by(...).all()` with no `.limit()`. A superadmin with a large user base causes unbounded memory allocation per request — an admin-level application DoS. Fix: add `.limit(500)` and optional `skip`/`limit` query params. | 🟠 HIGH | ✅ Done |
 
 #### 8.3 — Medium
 
@@ -658,4 +658,4 @@
 
 ---
 
-*Last updated: 2026-05-07 (Phase 8 security review complete · Phase 9–10 ATH improvement phases added)*
+*Last updated: 2026-05-17 (Phase 8.2 HIGH complete · Phase 4.5 DM + 4.6 creator platforms documented)*

@@ -377,6 +377,11 @@ GROQ_API_KEY=
 META_APP_ID=
 META_APP_SECRET=
 META_WEBHOOK_VERIFY_TOKEN=
+META_OAUTH_STATE_SECRET=   # python3 -c "import secrets; print(secrets.token_hex(32))"
+
+# Redis — required in production for distributed rate limiting across Railway replicas
+# Leave empty for local dev (falls back to in-memory)
+REDIS_URL=
 ```
 
 ### Frontend (`frontend/.env`)
@@ -450,6 +455,8 @@ Same pattern as Bioflow: **monorepo with independent deployment per service**.
 | `PORT` | `8000` |
 | `DEBUG` | `false` |
 | `META_WEBHOOK_VERIFY_TOKEN` | any secret string |
+| `META_OAUTH_STATE_SECRET` | `python3 -c "import secrets; print(secrets.token_hex(32))"` — **required**, app won't start without it |
+| `REDIS_URL` | `${{ Redis.REDIS_URL }}` — required for distributed rate limiting across replicas |
 
 ### Frontend → Vercel
 
