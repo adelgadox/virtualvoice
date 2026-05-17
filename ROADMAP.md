@@ -548,10 +548,10 @@
 
 | # | Task | Description | Severity | Status |
 |---|------|-------------|----------|--------|
-| 1 | Raise password minimum length to 12 characters | `schemas/auth.py:18-19` allows 8-character passwords. Carries over from Phase 7.4.1. Fix: change `len(v) < 8` to `len(v) < 12` and update the error message. | 🟢 LOW | ⬜ Pending |
-| 2 | Validate active LLM provider's API key at startup | `config.py` defaults all LLM API keys to `""`. If `LLM_PROVIDER=gemini` but `GEMINI_API_KEY` is empty, the app starts without error and only fails at runtime when a webhook comment arrives — silently dropping all LLM responses. Fix: add a startup check (alongside `validate_encryption_key()`) that asserts the key for the configured provider is non-empty. | 🟢 LOW | ⬜ Pending |
-| 3 | Run background jobs once at startup before entering sleep loop | Both `token_renewal_loop` (`core/meta/token_renewal.py:77`) and `denylist_cleanup_loop` (`core/denylist_cleanup.py:45`) start with `await asyncio.sleep(INTERVAL)` before their first execution. On fresh deploys, tokens expiring within 24h are not renewed for a full day, and expired denylist entries linger for up to 1 hour. Fix: call `_renew_expiring_tokens()` and `_cleanup_expired_tokens()` once immediately at the top of each loop before entering the `while True` sleep cycle. | 🟢 LOW | ⬜ Pending |
-| 4 | Change `REGISTRATION_ENABLED` default to `False` | `config.py:18` sets `registration_enabled: bool = True`. Without an explicit `REGISTRATION_ENABLED=false` env var, the registration endpoint is open by default — dangerous for a production invite-only app. Fix: change default to `False`; update `.env.example` and `ROADMAP.md` re-enable instructions accordingly. | 🟢 LOW | ⬜ Pending |
+| 1 | Raise password minimum length to 12 characters | `schemas/auth.py:18-19` allows 8-character passwords. Carries over from Phase 7.4.1. Fix: change `len(v) < 8` to `len(v) < 12` and update the error message. | 🟢 LOW | ✅ Done |
+| 2 | Validate active LLM provider's API key at startup | `config.py` defaults all LLM API keys to `""`. If `LLM_PROVIDER=gemini` but `GEMINI_API_KEY` is empty, the app starts without error and only fails at runtime when a webhook comment arrives — silently dropping all LLM responses. Fix: add a startup check (alongside `validate_encryption_key()`) that asserts the key for the configured provider is non-empty. | 🟢 LOW | ✅ Done |
+| 3 | Run background jobs once at startup before entering sleep loop | Both `token_renewal_loop` (`core/meta/token_renewal.py:77`) and `denylist_cleanup_loop` (`core/denylist_cleanup.py:45`) start with `await asyncio.sleep(INTERVAL)` before their first execution. On fresh deploys, tokens expiring within 24h are not renewed for a full day, and expired denylist entries linger for up to 1 hour. Fix: call `_renew_expiring_tokens()` and `_cleanup_expired_tokens()` once immediately at the top of each loop before entering the `while True` sleep cycle. | 🟢 LOW | ✅ Done |
+| 4 | Change `REGISTRATION_ENABLED` default to `False` | `config.py:18` sets `registration_enabled: bool = True`. Without an explicit `REGISTRATION_ENABLED=false` env var, the registration endpoint is open by default — dangerous for a production invite-only app. Fix: change default to `False`; update `.env.example` and `ROADMAP.md` re-enable instructions accordingly. | 🟢 LOW | ✅ Done |
 
 ---
 
@@ -658,4 +658,4 @@
 
 ---
 
-*Last updated: 2026-05-07 (Phase 8 security review complete · Phase 9–10 ATH improvement phases added)*
+*Last updated: 2026-05-17 (Phase 8.2 HIGH + 8.4 LOW complete · Phase 4.5 DM + 4.6 creator platforms documented)*

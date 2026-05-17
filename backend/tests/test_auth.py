@@ -93,7 +93,7 @@ class TestRegister:
         with TestClient(app) as client:
             res = client.post(
                 "/auth/register",
-                json={"email": "new@example.com", "password": "strongpass"},
+                json={"email": "new@example.com", "password": "strongpass123"},
             )
 
         assert res.status_code == 201
@@ -109,7 +109,7 @@ class TestRegister:
         with TestClient(app) as client:
             res = client.post(
                 "/auth/register",
-                json={"email": "existing@example.com", "password": "strongpass"},
+                json={"email": "existing@example.com", "password": "strongpass123"},
             )
 
         assert res.status_code == 409
@@ -134,7 +134,7 @@ class TestRegister:
         with TestClient(app) as client:
             res = client.post(
                 "/auth/register",
-                json={"email": "not-an-email", "password": "strongpass"},
+                json={"email": "not-an-email", "password": "strongpass123"},
             )
 
         assert res.status_code == 422
@@ -154,7 +154,7 @@ class TestRegister:
         with TestClient(app) as client:
             res = client.post(
                 "/auth/register",
-                json={"email": "full@example.com", "password": "strongpass", "full_name": "Full Name"},
+                json={"email": "full@example.com", "password": "strongpass123", "full_name": "Full Name"},
             )
 
         assert res.status_code == 201

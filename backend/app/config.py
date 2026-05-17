@@ -14,8 +14,8 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 60  # 1 hour — use refresh or re-login for longer sessions
 
-    # Registration
-    registration_enabled: bool = True
+    # Registration — False by default (invite-only). Set REGISTRATION_ENABLED=true to re-open.
+    registration_enabled: bool = False
 
     # CORS
     frontend_url: str = "http://localhost:3000"

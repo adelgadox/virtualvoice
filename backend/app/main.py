@@ -96,6 +96,18 @@ if _railway_env == "production" and not settings.meta_oauth_state_secret:
         "Generate one with: python3 -c \"import secrets; print(secrets.token_hex(32))\""
     )
 
+_LLM_KEY_MAP = {
+    "gemini": ("gemini_api_key", "GEMINI_API_KEY"),
+    "anthropic": ("anthropic_api_key", "ANTHROPIC_API_KEY"),
+    "openai": ("openai_api_key", "OPENAI_API_KEY"),
+}
+_attr, _env_var = _LLM_KEY_MAP.get(settings.llm_provider, (None, None))
+if _attr and not getattr(settings, _attr, ""):
+    raise RuntimeError(
+        f"LLM_PROVIDER={settings.llm_provider!r} but {_env_var} is not set. "
+        f"Set {_env_var} in your environment variables."
+    )
+
 app = FastAPI(title=settings.app_name, debug=settings.debug, lifespan=lifespan)
 app.state.limiter = limiter
 

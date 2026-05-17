@@ -71,8 +71,12 @@ async def _renew_expiring_tokens() -> None:
 
 
 async def token_renewal_loop() -> None:
-    """Infinite loop: wait 24h then renew expiring tokens."""
+    """Infinite loop: run once immediately at startup, then every 24h."""
     logger.info("Token renewal job started (interval: %dh)", RENEWAL_INTERVAL_SECONDS // 3600)
+    try:
+        await _renew_expiring_tokens()
+    except Exception as exc:
+        logger.error("Token renewal startup run error: %s", exc)
     while True:
         await asyncio.sleep(RENEWAL_INTERVAL_SECONDS)
         try:
