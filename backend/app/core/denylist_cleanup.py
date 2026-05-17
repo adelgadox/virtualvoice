@@ -40,8 +40,12 @@ async def _cleanup_expired_tokens() -> None:
 
 
 async def denylist_cleanup_loop() -> None:
-    """Infinite loop: wait 1h then purge expired denylist entries."""
+    """Infinite loop: run once immediately at startup, then every 1h."""
     logger.info("Denylist cleanup job started (interval: 1h)")
+    try:
+        await _cleanup_expired_tokens()
+    except Exception as exc:
+        logger.error("Denylist cleanup startup run error: %s", exc)
     while True:
         await asyncio.sleep(CLEANUP_INTERVAL_SECONDS)
         try:
