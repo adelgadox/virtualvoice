@@ -43,6 +43,7 @@ def _make_user(
     u.full_name = "Test User"
     u.is_active = is_active
     u.is_admin = is_admin
+    u.role = "user"
     u.google_id = google_id
     u.avatar_url = avatar_url
     u.auth_provider = auth_provider

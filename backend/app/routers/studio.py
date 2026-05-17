@@ -44,10 +44,13 @@ def get_stats(
 @limiter.limit("30/minute")
 def list_users(
     request: Request,
+    skip: int = 0,
+    limit: int = 100,
     db: Session = Depends(get_db),
     _: User = Depends(get_current_admin),
 ) -> list[User]:
-    return db.query(User).order_by(User.created_at.desc()).all()
+    limit = min(limit, 500)
+    return db.query(User).order_by(User.created_at.desc()).offset(skip).limit(limit).all()
 
 
 @router.post("/users", response_model=StudioUser, status_code=status.HTTP_201_CREATED)

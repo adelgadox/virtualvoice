@@ -14,6 +14,7 @@ def _influencer(system_prompt="You are Layla, a travel influencer.", llm_provide
     inf.name = "Layla"
     inf.system_prompt_core = system_prompt
     inf.llm_provider = llm_provider
+    inf.current_context = None
     return inf
 
 

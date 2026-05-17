@@ -114,8 +114,13 @@ async def get_instagram_accounts(user_token: str) -> list[dict]:
 
 
 def _state_secret() -> bytes:
-    """Return the dedicated OAuth state secret, falling back to the JWT secret if unset."""
-    return (settings.meta_oauth_state_secret or settings.secret_key).encode()
+    """Return the dedicated OAuth state secret. Raises if not configured."""
+    if not settings.meta_oauth_state_secret:
+        raise RuntimeError(
+            "META_OAUTH_STATE_SECRET is not set. "
+            "Generate one with: python3 -c \"import secrets; print(secrets.token_hex(32))\""
+        )
+    return settings.meta_oauth_state_secret.encode()
 
 
 def verify_state(state: str, expected_hmac: str) -> bool:
