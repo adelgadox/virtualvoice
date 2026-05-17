@@ -1,7 +1,10 @@
+import logging
 from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request
+
+logger = logging.getLogger(__name__)
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -112,9 +115,10 @@ async def approve_response(
             except TokenInvalidError as exc:
                 raise HTTPException(status_code=401, detail=str(exc)) from exc
             except Exception as exc:
+                logger.error("Failed to publish reply to Meta for response %s: %s", response_id, exc)
                 raise HTTPException(
                     status_code=502,
-                    detail=f"Failed to publish reply to Meta: {exc}",
+                    detail="Failed to publish the reply. Please try again.",
                 ) from exc
 
     resp.status = new_status

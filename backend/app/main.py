@@ -90,6 +90,12 @@ if _railway_env == "production" and settings.debug:
 from app.utils.encryption import validate_encryption_key  # noqa: E402
 validate_encryption_key()
 
+if _railway_env == "production" and not settings.meta_oauth_state_secret:
+    raise RuntimeError(
+        "META_OAUTH_STATE_SECRET is not set in production. "
+        "Generate one with: python3 -c \"import secrets; print(secrets.token_hex(32))\""
+    )
+
 app = FastAPI(title=settings.app_name, debug=settings.debug, lifespan=lifespan)
 app.state.limiter = limiter
 

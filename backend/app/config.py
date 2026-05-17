@@ -40,6 +40,10 @@ class Settings(BaseSettings):
     meta_oauth_redirect_uri: str = ""
     meta_oauth_state_secret: str = ""  # Dedicated HMAC secret for OAuth state — falls back to secret_key if unset
 
+    # Redis — required in multi-instance deployments so rate limits are shared across replicas
+    # Leave empty for local dev (falls back to in-memory storage)
+    redis_url: str = ""
+
     # Token encryption — Fernet key for encrypting Meta access tokens at rest
     # Generate with: python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
     token_encryption_key: str = ""
