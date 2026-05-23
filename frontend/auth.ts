@@ -66,12 +66,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       // Re-fetch role on every JWT rotation so demoted admins lose access promptly
       if (token.accessToken) {
-        const res = await fetch(`${API_URL}/auth/me`, {
-          headers: { Authorization: `Bearer ${token.accessToken as string}` },
-        });
-        if (res.ok) {
-          const profile = await res.json();
-          token.role = profile.role ?? "user";
+        try {
+          const res = await fetch(`${API_URL}/auth/me`, {
+            headers: { Authorization: `Bearer ${token.accessToken as string}` },
+            signal: AbortSignal.timeout(5000),
+          });
+          if (res.ok) {
+            const profile = await res.json();
+            token.role = profile.role ?? "user";
+          }
+        } catch {
+          // Backend unreachable — keep existing token.role, don't block auth
         }
       }
       return token;
