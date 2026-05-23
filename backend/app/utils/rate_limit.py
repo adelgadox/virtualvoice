@@ -18,7 +18,7 @@ def _make_limiter() -> Limiter:
 
     if settings.redis_url:
         logger.info("Rate limiter using Redis storage: %s", settings.redis_url)
-        return Limiter(key_func=get_client_ip, storage_uri=settings.redis_url)
+        return Limiter(key_func=get_client_ip, storage_uri=settings.redis_url, swallow_errors=True)
 
     logger.warning(
         "REDIS_URL not set — rate limiter using in-memory storage. "
