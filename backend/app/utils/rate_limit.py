@@ -14,7 +14,7 @@ def get_client_ip(request: Request) -> str:
     return "unknown"
 
 
-def _with_fast_timeout(url: str, seconds: int = 2) -> str:
+def _with_fast_timeout(url: str, seconds: float = 0.1) -> str:
     """Inject socket_connect_timeout and socket_timeout into a Redis URL so failures are fast."""
     parsed = urlparse(url)
     params = parse_qs(parsed.query, keep_blank_values=True)
