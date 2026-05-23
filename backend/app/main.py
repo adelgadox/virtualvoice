@@ -55,6 +55,10 @@ from app.core.denylist_cleanup import denylist_cleanup_loop  # noqa: E402
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next) -> Response:
+        # slowapi reads request.state.view_rate_limit as an argument to _inject_headers;
+        # if Redis is down and swallow_errors catches the timeout, slowapi never sets this
+        # attribute — causing AttributeError → 500. Pre-initialize to None so it always exists.
+        request.state.view_rate_limit = None
         response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "SAMEORIGIN"
