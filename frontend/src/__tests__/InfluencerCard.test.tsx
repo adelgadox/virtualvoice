@@ -9,6 +9,7 @@ const baseInfluencer: Influencer = {
   slug: "luna-garcia",
   llm_provider: "gemini",
   system_prompt_core: "You are Luna, a lifestyle influencer from CDMX.",
+  current_context: null,
   is_active: true,
   created_at: "2026-04-19T10:00:00Z",
   updated_at: null,
@@ -21,16 +22,16 @@ describe("InfluencerCard", () => {
     expect(screen.getByText("/luna-garcia")).toBeInTheDocument();
   });
 
-  it("shows Activo badge when is_active is true", () => {
+  it("shows Active badge when is_active is true", () => {
     render(<InfluencerCard influencer={baseInfluencer} onEdit={jest.fn()} />);
-    expect(screen.getByText("Activo")).toBeInTheDocument();
+    expect(screen.getByText("Active")).toBeInTheDocument();
   });
 
-  it("shows Inactivo badge when is_active is false", () => {
+  it("shows Inactive badge when is_active is false", () => {
     render(
       <InfluencerCard influencer={{ ...baseInfluencer, is_active: false }} onEdit={jest.fn()} />
     );
-    expect(screen.getByText("Inactivo")).toBeInTheDocument();
+    expect(screen.getByText("Inactive")).toBeInTheDocument();
   });
 
   it("shows LLM provider label", () => {
@@ -54,10 +55,10 @@ describe("InfluencerCard", () => {
     expect(preview.textContent!.length).toBeLessThan(200);
   });
 
-  it("calls onEdit with influencer when Editar is clicked", () => {
+  it("calls onEdit with influencer when Edit is clicked", () => {
     const onEdit = jest.fn();
     render(<InfluencerCard influencer={baseInfluencer} onEdit={onEdit} />);
-    fireEvent.click(screen.getByRole("button", { name: /editar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /edit/i }));
     expect(onEdit).toHaveBeenCalledWith(baseInfluencer);
   });
 });
