@@ -1,6 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import type { Influencer } from "@/types/api";
+
+/** Rendered size of the avatar, matching the w-10/h-10 utility classes. */
+const AVATAR_SIZE_PX = 40;
 
 interface InfluencerCardProps {
   influencer: Influencer;
@@ -34,9 +38,11 @@ export default function InfluencerCard({ influencer, profilePictureUrl, instagra
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           {profilePictureUrl ? (
-            <img
+            <Image
               src={profilePictureUrl}
               alt={influencer.name}
+              width={AVATAR_SIZE_PX}
+              height={AVATAR_SIZE_PX}
               className="w-10 h-10 rounded-full object-cover shrink-0 border border-gray-200 dark:border-gray-700"
             />
           ) : (
