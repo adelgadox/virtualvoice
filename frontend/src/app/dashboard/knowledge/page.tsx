@@ -19,9 +19,14 @@ export default function KnowledgePage() {
   const [influencers, setInfluencers] = useState<Influencer[]>([]);
   const [entries, setEntries] = useState<KnowledgeEntry[]>([]);
   const [selectedInfluencer, setSelectedInfluencer] = useState<string>("all");
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [modal, setModal] = useState<ModalState>({ type: "closed" });
+
+  // Which filter the current `entries` belong to. Deriving `loading` from it
+  // shows the loader in the same render the filter changes, with no setState
+  // in the effect body.
+  const [loadedFor, setLoadedFor] = useState<string | null>(null);
+  const loading = loadedFor !== selectedInfluencer;
 
   // Load influencers once
   useEffect(() => {
@@ -34,12 +39,11 @@ export default function KnowledgePage() {
   // Load entries when filter changes
   useEffect(() => {
     if (!token) return;
-    setLoading(true);
     const params = selectedInfluencer !== "all" ? `?influencer_id=${selectedInfluencer}` : "";
     apiFetch<KnowledgeEntry[]>(`/knowledge/${params}`, { token })
       .then(setEntries)
       .catch((err: unknown) => setError(err instanceof Error ? err.message : "Failed to load"))
-      .finally(() => setLoading(false));
+      .finally(() => setLoadedFor(selectedInfluencer));
   }, [token, selectedInfluencer]);
 
   function handleSaved(saved: KnowledgeEntry) {
