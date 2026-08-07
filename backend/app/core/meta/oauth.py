@@ -113,6 +113,32 @@ async def get_instagram_accounts(user_token: str) -> list[dict]:
     return accounts
 
 
+async def get_profile_picture_url(account_id: str, page_token: str) -> str | None:
+    """
+    Fetch the current profile picture URL for one Instagram Business account.
+
+    Meta signs these URLs with a short expiry, so a stored one cannot be reused
+    to re-download the image — it has to be re-read from the Graph API first.
+
+    Returns None when the token is rejected or the field is absent.
+    """
+    async with httpx.AsyncClient(timeout=15) as client:
+        resp = await client.get(
+            f"{_GRAPH}/{account_id}",
+            params={"fields": "profile_picture_url", "access_token": page_token},
+        )
+
+    if resp.status_code != 200:
+        logger.warning(
+            "Graph API returned %s for account %s while reading its profile picture",
+            resp.status_code,
+            account_id,
+        )
+        return None
+
+    return resp.json().get("profile_picture_url")
+
+
 def _state_secret() -> bytes:
     """Return the dedicated OAuth state secret. Raises if not configured."""
     if not settings.meta_oauth_state_secret:
