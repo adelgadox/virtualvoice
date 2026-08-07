@@ -1,6 +1,6 @@
 # Testing
 
-209 tests: **113 en backend**, **96 en frontend**.
+218 tests: **122 en backend**, **96 en frontend**.
 
 ## Correrlos
 
@@ -24,9 +24,10 @@ cd frontend && npx tsc --noEmit
 | `test_avatar_backfill.py` | 17 | Selección de filas, casos donde **no** debe escribir, conteos |
 | `test_llm_providers.py` | 13 | Gemini, Anthropic, OpenAI-compatible y el factory |
 | `test_personality.py` | 12 | Construcción del prompt, contexto situacional |
-| `test_cloudinary_avatar.py` | 11 | Subida, carpeta, degradación ante fallos |
+| `test_cloudinary_avatar.py` | 16 | Subida, carpeta, degradación ante fallos, sync en background |
 | `test_rate_limit.py` | 11 | Inyección de timeouts en la URL de Redis, `get_client_ip` |
 | `test_rag_embeddings.py` | 10 | Recuperación por similitud, acotada por influencer |
+| `test_instagram_callback.py` | 4 | El callback de OAuth agenda el avatar en vez de esperarlo |
 
 ## Frontend — `frontend/src/__tests__/`
 
@@ -55,6 +56,6 @@ Esa distinción está anotada explícitamente en varias suites: de los 47 tests 
 ## Lo que no está cubierto
 
 - No hay E2E. Los flujos que cruzan backend y frontend se prueban por separado.
-- El OAuth de Instagram no se puede ejercitar sin credenciales reales de Meta.
+- El OAuth de Instagram se prueba con la Graph API mockeada; el flujo real necesita credenciales de Meta.
 - El webhook de Meta se prueba a nivel de verificación de firma, no de extremo a extremo.
 - `frontend/src/app/dashboard/page.tsx`, `/metrics` y `/studio` no tienen tests.

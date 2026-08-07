@@ -62,7 +62,7 @@ backend/
     utils/        cifrado, rate limiting
   alembic/        migraciones
   scripts/        utilidades operativas
-  tests/          113 tests
+  tests/          122 tests
 
 frontend/
   src/
@@ -91,7 +91,7 @@ Detalle de variables de entorno y despliegue en [operación](docs/operations.md)
 ## Tests
 
 ```bash
-cd backend  && pytest -q          # 113
+cd backend  && pytest -q          # 122
 cd frontend && npx jest           # 96
 cd frontend && npm run lint       # 0 errores, 0 warnings
 ```

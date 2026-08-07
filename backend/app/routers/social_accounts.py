@@ -4,7 +4,7 @@ import time
 from urllib.parse import quote
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
@@ -25,7 +25,7 @@ from app.core.meta.oauth import (
     verify_state,
 )
 from app.core.meta.token_manager import compute_token_expiry
-from app.services.cloudinary_avatar import upload_avatar
+from app.services.cloudinary_avatar import sync_avatar_in_background
 from app.utils.encryption import encrypt_token
 
 logger = logging.getLogger(__name__)
@@ -76,6 +76,7 @@ def instagram_authorize(
 @limiter.limit("10/minute")
 async def instagram_callback(
     request: Request,
+    background_tasks: BackgroundTasks,
     code: str | None = Query(default=None),
     state: str | None = Query(default=None),
     error: str | None = Query(default=None),
@@ -149,10 +150,14 @@ async def instagram_callback(
         token_expires_at = compute_token_expiry()
         encrypted = encrypt_token(account["page_access_token"])
 
-        # Meta's picture URLs are signed and expire; mirror into Cloudinary so
-        # the stored URL stays valid. Falls back to the Meta URL on failure.
-        avatar_url = await upload_avatar(
-            account.get("profile_picture_url"), account["account_id"]
+        # Store Meta's URL now and mirror it into Cloudinary after the redirect.
+        # The upload is a round trip to a third party per account, and making
+        # the user wait on it would stretch the OAuth redirect for no benefit:
+        # the row is valid either way, and until the copy lands the card just
+        # shows the influencer's initial.
+        avatar_url = account.get("profile_picture_url")
+        background_tasks.add_task(
+            sync_avatar_in_background, account["account_id"], avatar_url
         )
 
         if existing:

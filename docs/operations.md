@@ -119,6 +119,10 @@ El backend sube el avatar a `virtualvoice/avatars` cuando se conecta una cuenta 
 
 Por qué así y no de otra forma: Meta firma sus URLs de foto de perfil con expiración corta, así que guardarlas tal cual las pudre solas. Y el modo *fetch* de Cloudinary — que sería lo natural para una URL remota — no tiene carpetas, así que no permitía separar este proyecto de los otros en la misma cuenta.
 
+**La subida no bloquea el OAuth.** El callback guarda la URL de Meta y agenda el copiado como background task de FastAPI, después de emitir el redirect. Es una ida y vuelta a un tercero por cada cuenta conectada, y hacer esperar al usuario no compra nada: la fila queda válida igual, y hasta que aterrice la copia se ve la inicial del influencer.
+
+La consecuencia a tener presente: entre el redirect y el fin de la tarea hay una ventana en que la fila todavía tiene la URL de Meta. Si el proceso muere en esa ventana, la copia no ocurre y esa cuenta queda para el [backfill](#backfill-de-avatares).
+
 Si las variables de Cloudinary faltan, el sistema degrada solo: el avatar conserva la URL de Meta, el CSP la bloquea y se ve la inicial del influencer. Nada se rompe.
 
 ## Cuando algo falla
