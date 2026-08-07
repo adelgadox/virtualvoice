@@ -11,8 +11,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from app.services.avatar_backfill import (
-    BackfillReport,
     backfill_account,
+    describe_target,
     needs_backfill,
     run_backfill,
 )
@@ -189,6 +189,36 @@ class TestRunBackfill:
              patch("app.services.avatar_backfill.backfill_account", new=AsyncMock(side_effect=outcomes)):
             report = await run_backfill(db)
 
-        assert report == BackfillReport(
-            scanned=4, migrated=2, skipped_no_token=1, failed_upload=1
-        )
+        assert report.scanned == 4
+        assert report.migrated == 2
+        assert report.skipped_no_token == 1
+        assert report.failed_upload == 1
+
+# ---------------------------------------------------------------------------
+# Target reporting — a run of zeros is only readable with the database named
+# ---------------------------------------------------------------------------
+
+class TestDescribeTarget:
+    def _session_bound_to(self, url_string):
+        from sqlalchemy.engine import make_url
+
+        db = MagicMock()
+        db.get_bind.return_value.url = make_url(url_string)
+        return db
+
+    def test_reports_host_port_and_database(self):
+        db = self._session_bound_to("postgresql://user:pw@db.railway.internal:5432/railway")
+        assert describe_target(db) == "db.railway.internal:5432/railway"
+
+    def test_omits_credentials(self):
+        db = self._session_bound_to("postgresql://admin:s3cret@localhost:5432/virtualvoice")
+        target = describe_target(db)
+
+        assert "s3cret" not in target
+        assert "admin" not in target
+
+    def test_survives_an_unbound_session(self):
+        db = MagicMock()
+        db.get_bind.side_effect = RuntimeError("not bound")
+
+        assert describe_target(db) == "unknown"

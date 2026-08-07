@@ -29,8 +29,15 @@ CLOUDINARY_HOST = "res.cloudinary.com"
 
 @dataclass(frozen=True)
 class BackfillReport:
-    """Outcome counts for one run."""
+    """
+    Outcome counts for one run.
 
+    `total_accounts` is what makes a zero readable: no Instagram accounts at
+    all is a very different result from none left to migrate, and the two look
+    identical if only `scanned` is reported.
+    """
+
+    total_accounts: int = 0
     scanned: int = 0
     migrated: int = 0
     skipped_no_token: int = 0
@@ -40,6 +47,7 @@ class BackfillReport:
     def with_(self, **changes: int) -> "BackfillReport":
         """Return a copy with the given counters incremented."""
         current = {
+            "total_accounts": self.total_accounts,
             "scanned": self.scanned,
             "migrated": self.migrated,
             "skipped_no_token": self.skipped_no_token,
@@ -49,6 +57,25 @@ class BackfillReport:
         for key, delta in changes.items():
             current[key] += delta
         return BackfillReport(**current)
+
+
+def describe_target(db: Session) -> str:
+    """
+    host:port/database for the session's connection, with credentials dropped.
+
+    Printed before the run because the most confusing possible outcome is a
+    row of zeros from the wrong database — a local docker-compose one, say,
+    when production was meant.
+    """
+    try:
+        url = db.get_bind().url
+    except Exception:  # pragma: no cover — only reachable with an unbound session
+        return "unknown"
+
+    host = url.host or "unknown"
+    port = f":{url.port}" if url.port else ""
+    database = f"/{url.database}" if url.database else ""
+    return f"{host}{port}{database}"
 
 
 def needs_backfill(account: SocialAccount) -> bool:
@@ -117,8 +144,9 @@ async def run_backfill(db: Session, *, dry_run: bool = False) -> BackfillReport:
             "CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET before running the backfill."
         )
 
+    total_accounts = db.query(SocialAccount).filter(SocialAccount.platform == "instagram").count()
     pending = find_pending(db)
-    report = BackfillReport(scanned=len(pending))
+    report = BackfillReport(total_accounts=total_accounts, scanned=len(pending))
 
     for account in pending:
         outcome = await backfill_account(account, dry_run=dry_run)
