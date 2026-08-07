@@ -66,9 +66,9 @@ describe("ApprovalCard", () => {
 
     it("shows action buttons", () => {
       renderCard();
-      expect(screen.getByRole("button", { name: /aprobar/i })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /regenerar/i })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /ignorar/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /^approve$/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /^regenerate$/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /^ignore$/i })).toBeInTheDocument();
     });
 
     it("shows fallback dash when comment content is null", () => {
@@ -83,7 +83,7 @@ describe("ApprovalCard", () => {
       mockApiFetch.mockResolvedValueOnce({});
       renderCard({}, onDone);
 
-      await userEvent.click(screen.getByRole("button", { name: /aprobar/i }));
+      await userEvent.click(screen.getByRole("button", { name: /^approve$/i }));
 
       await waitFor(() => {
         expect(mockApiFetch).toHaveBeenCalledWith(
@@ -98,7 +98,7 @@ describe("ApprovalCard", () => {
       mockApiFetch.mockRejectedValueOnce(new Error("Network error"));
       renderCard();
 
-      await userEvent.click(screen.getByRole("button", { name: /aprobar/i }));
+      await userEvent.click(screen.getByRole("button", { name: /^approve$/i }));
 
       await waitFor(() => {
         expect(screen.getByText("Network error")).toBeInTheDocument();
@@ -109,9 +109,9 @@ describe("ApprovalCard", () => {
       mockApiFetch.mockImplementation(() => new Promise(() => {})); // never resolves
       renderCard();
 
-      fireEvent.click(screen.getByRole("button", { name: /aprobar/i }));
+      fireEvent.click(screen.getByRole("button", { name: /^approve$/i }));
 
-      expect(screen.getByRole("button", { name: /aprobando/i })).toBeDisabled();
+      expect(screen.getByRole("button", { name: /approving/i })).toBeDisabled();
     });
   });
 
@@ -121,7 +121,7 @@ describe("ApprovalCard", () => {
       mockApiFetch.mockResolvedValueOnce({});
       renderCard({}, onDone);
 
-      await userEvent.click(screen.getByRole("button", { name: /ignorar/i }));
+      await userEvent.click(screen.getByRole("button", { name: /^ignore$/i }));
 
       await waitFor(() => {
         expect(mockApiFetch).toHaveBeenCalledWith(
@@ -141,34 +141,34 @@ describe("ApprovalCard", () => {
       });
       renderCard();
 
-      await userEvent.click(screen.getByRole("button", { name: /regenerar/i }));
+      await userEvent.click(screen.getByRole("button", { name: /^regenerate$/i }));
 
       await waitFor(() => {
         expect(screen.getByText("Regenerated response text!")).toBeInTheDocument();
-        expect(screen.getByText(/regenerada/i)).toBeInTheDocument();
+        expect(screen.getByText(/\(regenerated\)/i)).toBeInTheDocument();
       });
     });
   });
 
   describe("inline edit", () => {
-    it("shows textarea when clicking Editar", async () => {
+    it("shows textarea when clicking Edit", async () => {
       renderCard();
 
-      await userEvent.click(screen.getByRole("button", { name: /^editar$/i }));
+      await userEvent.click(screen.getByRole("button", { name: /^edit$/i }));
 
       expect(screen.getByRole("textbox")).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /cancelar edición/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /cancel edit/i })).toBeInTheDocument();
     });
 
     it("sends edited text on approve", async () => {
       mockApiFetch.mockResolvedValueOnce({});
       renderCard();
 
-      await userEvent.click(screen.getByRole("button", { name: /^editar$/i }));
+      await userEvent.click(screen.getByRole("button", { name: /^edit$/i }));
       const textarea = screen.getByRole("textbox");
       await userEvent.clear(textarea);
       await userEvent.type(textarea, "My edited response");
-      await userEvent.click(screen.getByRole("button", { name: /aprobar/i }));
+      await userEvent.click(screen.getByRole("button", { name: /^approve$/i }));
 
       await waitFor(() => {
         expect(mockApiFetch).toHaveBeenCalledWith(
@@ -183,8 +183,8 @@ describe("ApprovalCard", () => {
     it("cancels edit and restores original text", async () => {
       renderCard();
 
-      await userEvent.click(screen.getByRole("button", { name: /^editar$/i }));
-      await userEvent.click(screen.getByRole("button", { name: /cancelar edición/i }));
+      await userEvent.click(screen.getByRole("button", { name: /^edit$/i }));
+      await userEvent.click(screen.getByRole("button", { name: /cancel edit/i }));
 
       expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
       expect(screen.getByText("Great question! Thanks for asking.")).toBeInTheDocument();

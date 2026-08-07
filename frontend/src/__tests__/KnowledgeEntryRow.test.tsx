@@ -29,7 +29,7 @@ describe("KnowledgeEntryRow", () => {
     render(
       <KnowledgeEntryRow entry={baseEntry} token="tok" onEdit={jest.fn()} onDeleted={jest.fn()} />
     );
-    expect(screen.getByText("Biografía")).toBeInTheDocument();
+    expect(screen.getByText("Biography")).toBeInTheDocument();
   });
 
   it("renders content text", () => {
@@ -39,16 +39,16 @@ describe("KnowledgeEntryRow", () => {
     expect(screen.getByText(baseEntry.content)).toBeInTheDocument();
   });
 
-  it("calls onEdit when Editar is clicked", () => {
+  it("calls onEdit when Edit is clicked", () => {
     const onEdit = jest.fn();
     render(
       <KnowledgeEntryRow entry={baseEntry} token="tok" onEdit={onEdit} onDeleted={jest.fn()} />
     );
-    fireEvent.click(screen.getByRole("button", { name: /editar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^edit$/i }));
     expect(onEdit).toHaveBeenCalledWith(baseEntry);
   });
 
-  it("truncates long content and shows Ver más button", () => {
+  it("truncates long content and shows Show more button", () => {
     const longContent = "A".repeat(200);
     render(
       <KnowledgeEntryRow
@@ -58,10 +58,10 @@ describe("KnowledgeEntryRow", () => {
         onDeleted={jest.fn()}
       />
     );
-    expect(screen.getByRole("button", { name: /ver más/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /show more/i })).toBeInTheDocument();
   });
 
-  it("expands content on Ver más click", async () => {
+  it("expands content on Show more click", async () => {
     const longContent = "B".repeat(200);
     render(
       <KnowledgeEntryRow
@@ -71,8 +71,8 @@ describe("KnowledgeEntryRow", () => {
         onDeleted={jest.fn()}
       />
     );
-    await userEvent.click(screen.getByRole("button", { name: /ver más/i }));
-    expect(screen.getByRole("button", { name: /ver menos/i })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /show more/i }));
+    expect(screen.getByRole("button", { name: /show less/i })).toBeInTheDocument();
   });
 
   it("calls apiFetch DELETE and onDeleted after confirm", async () => {
@@ -83,7 +83,7 @@ describe("KnowledgeEntryRow", () => {
     render(
       <KnowledgeEntryRow entry={baseEntry} token="tok" onEdit={jest.fn()} onDeleted={onDeleted} />
     );
-    await userEvent.click(screen.getByRole("button", { name: /eliminar/i }));
+    await userEvent.click(screen.getByRole("button", { name: /^delete$/i }));
 
     await waitFor(() => {
       expect(mockApiFetch).toHaveBeenCalledWith(
@@ -101,7 +101,7 @@ describe("KnowledgeEntryRow", () => {
     render(
       <KnowledgeEntryRow entry={baseEntry} token="tok" onEdit={jest.fn()} onDeleted={onDeleted} />
     );
-    await userEvent.click(screen.getByRole("button", { name: /eliminar/i }));
+    await userEvent.click(screen.getByRole("button", { name: /^delete$/i }));
 
     expect(mockApiFetch).not.toHaveBeenCalled();
     expect(onDeleted).not.toHaveBeenCalled();
