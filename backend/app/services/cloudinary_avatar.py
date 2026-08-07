@@ -23,6 +23,9 @@ logger = logging.getLogger(__name__)
 # Top-level folder for this project inside the shared Cloudinary account.
 AVATAR_FOLDER = "virtualvoice/avatars"
 
+# Marks a URL as already mirrored.
+CLOUDINARY_HOST = "res.cloudinary.com"
+
 # Avatars render at 40px; 160 covers up to 4x without storing anything larger.
 AVATAR_STORED_SIZE_PX = 160
 
@@ -98,3 +101,52 @@ async def upload_avatar(source_url: str | None, account_id: str) -> str | None:
         return source_url
 
     return result.get("secure_url") or source_url
+
+
+async def sync_avatar_in_background(account_id: str, source_url: str | None) -> None:
+    """
+    Mirror an avatar and persist the result, outside any request.
+
+    Runs as a FastAPI background task after the OAuth callback has already
+    redirected, so the user never waits on Cloudinary. That means the request's
+    session is gone by now and this opens its own.
+
+    Never raises: a background task that blows up takes its traceback to the
+    logs and nothing else, and the row it would have updated is already valid —
+    it just still holds the Meta URL.
+    """
+    if not source_url:
+        return
+
+    try:
+        mirrored = await upload_avatar(source_url, account_id)
+    except Exception as exc:  # pragma: no cover — upload_avatar swallows its own
+        logger.warning("Avatar sync failed for account %s: %s", account_id, exc)
+        return
+
+    # upload_avatar returns its input when it could not copy the image.
+    if not mirrored or CLOUDINARY_HOST not in mirrored:
+        return
+
+    # Imported here so the module keeps working in contexts with no database.
+    from app.database import SessionLocal
+    from app.models.social_account import SocialAccount
+
+    db = SessionLocal()
+    try:
+        # Scoped by account_id alone, not by influencer: it is the same
+        # Instagram account and therefore the same picture wherever it appears.
+        rows = (
+            db.query(SocialAccount)
+            .filter(SocialAccount.account_id == account_id)
+            .all()
+        )
+        for row in rows:
+            row.profile_picture_url = mirrored
+        db.commit()
+        logger.info("Mirrored the avatar for account %s (%d row(s))", account_id, len(rows))
+    except Exception as exc:
+        db.rollback()
+        logger.warning("Could not store the mirrored avatar for account %s: %s", account_id, exc)
+    finally:
+        db.close()

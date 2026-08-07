@@ -19,12 +19,10 @@ from sqlalchemy.orm import Session
 
 from app.core.meta.oauth import get_profile_picture_url
 from app.models.social_account import SocialAccount
-from app.services.cloudinary_avatar import is_configured, upload_avatar
+from app.services.cloudinary_avatar import CLOUDINARY_HOST, is_configured, upload_avatar
 from app.utils.encryption import decrypt_token
 
 logger = logging.getLogger(__name__)
-
-CLOUDINARY_HOST = "res.cloudinary.com"
 
 
 @dataclass(frozen=True)
