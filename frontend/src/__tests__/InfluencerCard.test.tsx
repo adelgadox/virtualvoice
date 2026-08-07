@@ -55,10 +55,69 @@ describe("InfluencerCard", () => {
     expect(preview.textContent!.length).toBeLessThan(200);
   });
 
+  it("renders the initial fallback when there is no profile picture", () => {
+    render(<InfluencerCard influencer={baseInfluencer} onEdit={jest.fn()} />);
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+    expect(screen.getByText("L")).toBeInTheDocument();
+  });
+
   it("calls onEdit with influencer when Edit is clicked", () => {
     const onEdit = jest.fn();
     render(<InfluencerCard influencer={baseInfluencer} onEdit={onEdit} />);
     fireEvent.click(screen.getByRole("button", { name: /edit/i }));
     expect(onEdit).toHaveBeenCalledWith(baseInfluencer);
+  });
+});
+
+/**
+ * The avatar goes through next/image. Routing it via /_next/image is what keeps
+ * it inside the page CSP: img-src lists 'self' but not Meta's CDNs, so a direct
+ * <img> to scontent-*.cdninstagram.com would be blocked in production.
+ */
+describe("InfluencerCard avatar", () => {
+  const INSTAGRAM_URL =
+    "https://scontent-mad1-1.cdninstagram.com/v/t51.2885-19/profile.jpg";
+
+  function renderWithAvatar() {
+    render(
+      <InfluencerCard
+        influencer={baseInfluencer}
+        profilePictureUrl={INSTAGRAM_URL}
+        onEdit={jest.fn()}
+      />
+    );
+    return screen.getByRole("img", { name: "Luna García" });
+  }
+
+  it("uses the influencer name as alt text", () => {
+    expect(renderWithAvatar()).toBeInTheDocument();
+  });
+
+  it("serves the image from the same origin, not Meta's CDN", () => {
+    const src = renderWithAvatar().getAttribute("src") ?? "";
+
+    expect(src.startsWith("/_next/image")).toBe(true);
+    expect(src.startsWith("https://scontent")).toBe(false);
+  });
+
+  it("passes the original URL through to the optimizer", () => {
+    const src = renderWithAvatar().getAttribute("src") ?? "";
+
+    expect(decodeURIComponent(src)).toContain(INSTAGRAM_URL);
+  });
+
+  it("offers a 2x candidate for retina screens", () => {
+    const srcset = renderWithAvatar().getAttribute("srcset") ?? "";
+
+    expect(srcset).toContain("w=40");
+    expect(srcset).toContain("w=80");
+    expect(srcset).toContain("2x");
+  });
+
+  it("reserves the 40px box so the card does not shift while loading", () => {
+    const img = renderWithAvatar();
+
+    expect(img).toHaveAttribute("width", "40");
+    expect(img).toHaveAttribute("height", "40");
   });
 });

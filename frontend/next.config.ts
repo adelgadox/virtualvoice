@@ -3,6 +3,21 @@ import type { NextConfig } from "next";
 const isDev = process.env.NODE_ENV === "development";
 
 const nextConfig: NextConfig = {
+  images: {
+    // Instagram Business profile pictures come from the Meta Graph API and are
+    // served off Meta's CDNs. The exact subdomain varies per request
+    // (scontent-mad1-1, scontent-lhr8-2, …), hence the wildcards.
+    remotePatterns: [
+      { protocol: "https", hostname: "**.cdninstagram.com" },
+      { protocol: "https", hostname: "**.fbcdn.net" },
+      { protocol: "https", hostname: "graph.facebook.com" },
+    ],
+    // Meta signs these URLs with a short expiry. Holding the optimized copy for
+    // a day means the avatar survives the source URL going stale.
+    minimumCacheTTL: 86_400,
+    // Avatars render at 40px CSS; 40/80/120 covers 1x/2x/3x with no waste.
+    imageSizes: [40, 80, 120],
+  },
   headers: async () => [
     {
       source: "/(.*)",
