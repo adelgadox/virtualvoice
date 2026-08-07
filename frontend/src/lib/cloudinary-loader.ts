@@ -1,22 +1,23 @@
 /**
- * Custom next/image loader backed by Cloudinary's fetch delivery type.
+ * Custom next/image loader for Cloudinary-hosted images.
  *
  * Registering this as `images.loaderFile` turns Vercel's image optimizer off
  * entirely — Next emits Cloudinary URLs and never routes a request through
  * /_next/image, so no optimization units are billed.
  *
- * Fetch mode is what makes this work for Instagram avatars: the source URL is
- * remote, per-account and short-lived, so there is nothing to upload ahead of
- * time. Cloudinary pulls the origin image, transforms it and caches the result.
- *
- * Requires "fetched URL" delivery to be enabled on the Cloudinary account, with
- * Meta's CDNs on the allowed-sources list.
+ * Avatars are uploaded into the virtualvoice/avatars folder by the backend when
+ * an Instagram account is connected (app/services/cloudinary_avatar.py), so
+ * what arrives here is already a Cloudinary delivery URL. This loader only
+ * injects the per-width transformation into it.
  */
 
-const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+/** Matches the delivery segment, with or without transformations already in it. */
+const UPLOAD_SEGMENT = "/image/upload/";
 
-/** Avatars are square; crop to the face rather than letterboxing. */
-const AVATAR_TRANSFORMS = ["c_fill", "g_face"];
+/** Anything Cloudinary does not serve is returned untouched. */
+function isCloudinary(src: string): boolean {
+  return src.includes("res.cloudinary.com") && src.includes(UPLOAD_SEGMENT);
+}
 
 interface LoaderArgs {
   src: string;
@@ -24,25 +25,11 @@ interface LoaderArgs {
   quality?: number;
 }
 
-/** Same-origin and data URLs are already ours — never send them to Cloudinary. */
-function isLocal(src: string): boolean {
-  return src.startsWith("/") || src.startsWith("data:") || src.startsWith("blob:");
-}
-
 export default function cloudinaryLoader({ src, width, quality }: LoaderArgs): string {
-  if (isLocal(src)) return src;
-
-  // Without a cloud name there is nothing to build a Cloudinary URL from.
-  // Returning the origin URL keeps the markup valid; the avatar itself will be
-  // blocked by img-src, which is the loud failure we want over a silent 404.
-  if (!CLOUD_NAME) {
-    if (process.env.NODE_ENV !== "production") {
-      console.warn(
-        "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME is not set — images fall back to their origin URL and will be blocked by CSP."
-      );
-    }
-    return src;
-  }
+  // Local, data: and blob: sources — and anything not on Cloudinary — are left
+  // as-is. Returning them unchanged keeps next/image usable for other images
+  // without forcing every one of them through Cloudinary.
+  if (!isCloudinary(src)) return src;
 
   const transforms = [
     // f_auto lets Cloudinary pick the format per browser. Quality is q_auto
@@ -50,10 +37,22 @@ export default function cloudinaryLoader({ src, width, quality }: LoaderArgs): s
     // Cloudinary reject the URL.
     "f_auto",
     quality ? `q_${quality}` : "q_auto",
-    ...AVATAR_TRANSFORMS,
+    // Avatars are square; crop to the face rather than letterboxing.
+    "c_fill",
+    "g_face",
     `w_${width}`,
     `h_${width}`,
   ].join(",");
 
-  return `https://res.cloudinary.com/${CLOUD_NAME}/image/fetch/${transforms}/${encodeURIComponent(src)}`;
+  const [prefix, path] = src.split(UPLOAD_SEGMENT);
+
+  // Cloudinary paths are `[transforms/]v123/public_id.ext`. Anything before the
+  // version is a transformation segment, so anchoring on the version is what
+  // stops widths from stacking up across renders. Folder names are keyed off
+  // the version too, which is why they survive — the backend always uploads
+  // with one. A URL without a version has nothing to strip.
+  const versionAt = path.search(/(?:^|\/)v\d+\//);
+  const publicPath = versionAt === -1 ? path : path.slice(versionAt).replace(/^\//, "");
+
+  return `${prefix}${UPLOAD_SEGMENT}${transforms}/${publicPath}`;
 }

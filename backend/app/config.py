@@ -48,6 +48,13 @@ class Settings(BaseSettings):
     # Generate with: python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
     token_encryption_key: str = ""
 
+    # Cloudinary — hosts influencer avatars under the "virtualvoice" folder.
+    # Leave empty to skip the upload: avatars then keep their Meta CDN URL,
+    # which the frontend CSP blocks, so the initial fallback shows instead.
+    cloudinary_cloud_name: str = ""
+    cloudinary_api_key: str = ""
+    cloudinary_api_secret: str = ""
+
     class Config:
         env_file = ".env"
         extra = "ignore"

@@ -25,6 +25,7 @@ from app.core.meta.oauth import (
     verify_state,
 )
 from app.core.meta.token_manager import compute_token_expiry
+from app.services.cloudinary_avatar import upload_avatar
 from app.utils.encryption import encrypt_token
 
 logger = logging.getLogger(__name__)
@@ -147,12 +148,19 @@ async def instagram_callback(
 
         token_expires_at = compute_token_expiry()
         encrypted = encrypt_token(account["page_access_token"])
+
+        # Meta's picture URLs are signed and expire; mirror into Cloudinary so
+        # the stored URL stays valid. Falls back to the Meta URL on failure.
+        avatar_url = await upload_avatar(
+            account.get("profile_picture_url"), account["account_id"]
+        )
+
         if existing:
             existing.access_token = encrypted
             existing.token_expires_at = token_expires_at
             existing.username = account["username"]
             existing.page_id = account["page_id"]
-            existing.profile_picture_url = account.get("profile_picture_url")
+            existing.profile_picture_url = avatar_url
             existing.is_active = True
         else:
             db.add(SocialAccount(
@@ -161,7 +169,7 @@ async def instagram_callback(
                 account_id=account["account_id"],
                 page_id=account["page_id"],
                 username=account["username"],
-                profile_picture_url=account.get("profile_picture_url"),
+                profile_picture_url=avatar_url,
                 access_token=encrypted,
                 token_expires_at=token_expires_at,
             ))

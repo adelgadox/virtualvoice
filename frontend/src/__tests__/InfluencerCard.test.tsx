@@ -76,14 +76,15 @@ describe("InfluencerCard", () => {
  * a direct <img> to scontent-*.cdninstagram.com would be blocked.
  */
 describe("InfluencerCard avatar", () => {
-  const INSTAGRAM_URL =
-    "https://scontent-mad1-1.cdninstagram.com/v/t51.2885-19/profile.jpg";
+  // What the backend stores after mirroring the Instagram picture.
+  const AVATAR_URL =
+    "https://res.cloudinary.com/demo-cloud/image/upload/v1782794310/virtualvoice/avatars/17841400000000000.webp";
 
   function renderWithAvatar() {
     render(
       <InfluencerCard
         influencer={baseInfluencer}
-        profilePictureUrl={INSTAGRAM_URL}
+        profilePictureUrl={AVATAR_URL}
         onEdit={jest.fn()}
       />
     );
@@ -94,11 +95,10 @@ describe("InfluencerCard avatar", () => {
     expect(renderWithAvatar()).toBeInTheDocument();
   });
 
-  it("serves the image from Cloudinary, not Meta's CDN", () => {
+  it("serves the image from Cloudinary", () => {
     const src = renderWithAvatar().getAttribute("src") ?? "";
 
     expect(src.startsWith("https://res.cloudinary.com/")).toBe(true);
-    expect(src.startsWith("https://scontent")).toBe(false);
   });
 
   it("never routes through Vercel's image optimizer", () => {
@@ -107,11 +107,10 @@ describe("InfluencerCard avatar", () => {
     expect(src).not.toContain("/_next/image");
   });
 
-  it("passes the original URL through to Cloudinary fetch", () => {
+  it("keeps the asset inside the virtualvoice folder", () => {
     const src = renderWithAvatar().getAttribute("src") ?? "";
 
-    expect(src).toContain("/image/fetch/");
-    expect(decodeURIComponent(src)).toContain(INSTAGRAM_URL);
+    expect(src).toContain("/virtualvoice/avatars/17841400000000000.webp");
   });
 
   it("offers a 2x candidate for retina screens", () => {
