@@ -12,10 +12,10 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@auth/core": "^0.41.2",
+    "@auth/core": "^0.41.3",
     "@vercel/analytics": "^2.0.1",
-    "next": "^16.2.6",
-    "next-auth": "^5.0.0-beta.30",
+    "next": "^16.3.0",
+    "next-auth": "^5.0.0-beta.32",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "swr": "^2.4.1"
