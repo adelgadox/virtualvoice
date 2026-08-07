@@ -11,29 +11,41 @@ interface Props {
 
 export default function SocialAccountsList({ influencerId, token }: Props) {
   const [accounts, setAccounts] = useState<SocialAccount[]>([]);
-  const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [disconnecting, setDisconnecting] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function load() {
-    setLoading(true);
-    try {
-      const data = await apiFetch<SocialAccount[]>(
-        `/social-accounts/?influencer_id=${influencerId}`,
-        { token }
-      );
-      setAccounts(data);
-    } catch {
-      setError("Failed to load accounts");
-    } finally {
-      setLoading(false);
-    }
-  }
+  // Which influencer the current `accounts` belong to. Deriving `loading` from
+  // it means switching influencer shows the loader during the same render,
+  // with no setState in the effect body.
+  const [loadedFor, setLoadedFor] = useState<string | null>(null);
+  const loading = loadedFor !== influencerId;
 
   useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const data = await apiFetch<SocialAccount[]>(
+          `/social-accounts/?influencer_id=${influencerId}`,
+          { token }
+        );
+        if (cancelled) return;
+        setAccounts(data);
+        setError(null);
+      } catch {
+        if (!cancelled) setError("Failed to load accounts");
+      } finally {
+        if (!cancelled) setLoadedFor(influencerId);
+      }
+    }
+
     load();
-  }, [influencerId]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [influencerId, token]);
 
   async function handleConnect() {
     setConnecting(true);

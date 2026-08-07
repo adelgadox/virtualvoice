@@ -15,8 +15,13 @@ export default function QueuePage() {
   const [responses, setResponses] = useState<PendingResponse[]>([]);
   const [influencers, setInfluencers] = useState<Influencer[]>([]);
   const [filterInfluencer, setFilterInfluencer] = useState<string>("all");
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Which filter the current `responses` belong to. Deriving `loading` from it
+  // shows the loader in the same render the filter changes, and keeps the
+  // 30s poll from flashing it on every tick.
+  const [loadedFor, setLoadedFor] = useState<string | null>(null);
+  const loading = loadedFor !== filterInfluencer;
 
   const fetchResponses = useCallback(async () => {
     if (!token) return;
@@ -40,11 +45,21 @@ export default function QueuePage() {
 
   // Fetch responses + polling
   useEffect(() => {
-    setLoading(true);
-    fetchResponses().finally(() => setLoading(false));
+    let cancelled = false;
+
+    async function initialLoad() {
+      await fetchResponses();
+      if (!cancelled) setLoadedFor(filterInfluencer);
+    }
+
+    initialLoad();
     const interval = setInterval(fetchResponses, POLL_INTERVAL_MS);
-    return () => clearInterval(interval);
-  }, [fetchResponses]);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [fetchResponses, filterInfluencer]);
 
   function handleDone(id: string) {
     setResponses((prev) => prev.filter((r) => r.id !== id));

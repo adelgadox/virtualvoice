@@ -19,7 +19,7 @@ export default async function StudioUsersPage() {
   const session = await auth();
   const users = session?.accessToken ? await getUsers(session.accessToken) : [];
   const isSuperadmin = session?.role === "superadmin";
-  const currentUserId = (session as any)?.user?.id ?? "";
+  const currentUserId = session?.user?.id ?? "";
 
   return (
     <div className="space-y-6">

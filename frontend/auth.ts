@@ -42,7 +42,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       // For Google SSO: sync user with backend
       if (account?.provider === "google" && account.id_token) {
         const res = await fetch(`${API_URL}/auth/google`, {

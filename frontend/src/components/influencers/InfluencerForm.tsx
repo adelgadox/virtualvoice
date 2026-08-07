@@ -177,7 +177,7 @@ export default function InfluencerForm({ influencer, token, onSaved, onCancel }:
           className="w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 resize-y focus:outline-none focus:ring-2 focus:ring-brand/40 leading-relaxed"
         />
         <p className="text-xs text-gray-400">
-          Free-form note about the influencer's current state. Injected into each prompt alongside today's date and recent Instagram posts.
+          Free-form note about the influencer&apos;s current state. Injected into each prompt alongside today&apos;s date and recent Instagram posts.
         </p>
       </div>
 

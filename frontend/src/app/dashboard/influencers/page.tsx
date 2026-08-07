@@ -16,6 +16,42 @@ type ModalState =
   | { type: "edit"; influencer: Influencer }
   | { type: "accounts"; influencer: Influencer };
 
+type Toast = { type: "success" | "error"; message: string };
+
+const OAUTH_ERROR_MESSAGES: Record<string, string> = {
+  no_instagram_account: "No Instagram Business account found linked to your Facebook pages",
+  token_exchange_failed: "Failed to get the token. Please try again.",
+  invalid_state: "Security error in the OAuth flow. Please try again.",
+  missing_params: "Incomplete response from Meta. Please try again.",
+};
+
+/**
+ * The Instagram OAuth redirect lands here with its result in the query string.
+ * Read once, on the first render — the params are stripped from the URL right
+ * after, so re-reading them later would yield nothing.
+ */
+function readOAuthResult(params: URLSearchParams): { toast: Toast | null; influencerId: string | null } {
+  if (params.get("oauth_success") === "true") {
+    return {
+      toast: { type: "success", message: "Instagram account connected successfully" },
+      influencerId: params.get("influencer_id"),
+    };
+  }
+
+  const oauthError = params.get("oauth_error");
+  if (oauthError) {
+    return {
+      toast: {
+        type: "error",
+        message: OAUTH_ERROR_MESSAGES[oauthError] ?? "An unexpected error occurred. Please try again.",
+      },
+      influencerId: null,
+    };
+  }
+
+  return { toast: null, influencerId: null };
+}
+
 export default function InfluencersPage() {
   const { data: session } = useSession();
   const token = session?.accessToken as string | undefined;
@@ -26,32 +62,32 @@ export default function InfluencersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [modal, setModal] = useState<ModalState>({ type: "closed" });
-  const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
-  // Handle OAuth callback result
+  const [oauthResult] = useState(() => readOAuthResult(searchParams));
+  const [toast, setToast] = useState<Toast | null>(oauthResult.toast);
+
+  // The influencer whose accounts modal should open once the list arrives from
+  // the API. Derived rather than set from an effect, so it costs no extra render.
+  const [pendingAccountsFor, setPendingAccountsFor] = useState<string | null>(oauthResult.influencerId);
+  const pendingAccountsInfluencer =
+    pendingAccountsFor === null ? undefined : influencers.find((i) => i.id === pendingAccountsFor);
+
+  const effectiveModal: ModalState =
+    modal.type === "closed" && pendingAccountsInfluencer
+      ? { type: "accounts", influencer: pendingAccountsInfluencer }
+      : modal;
+
+  function closeModal() {
+    setPendingAccountsFor(null);
+    setModal({ type: "closed" });
+  }
+
+  // Strip the consumed OAuth params from the URL.
   useEffect(() => {
-    const success = searchParams.get("oauth_success");
-    const oauthError = searchParams.get("oauth_error");
-    const influencerId = searchParams.get("influencer_id");
-
-    if (success === "true") {
-      setToast({ type: "success", message: "Instagram account connected successfully" });
-      if (influencerId) {
-        const inf = influencers.find((i) => i.id === influencerId);
-        if (inf) setModal({ type: "accounts", influencer: inf });
-      }
-      window.history.replaceState({}, "", "/dashboard/influencers");
-    } else if (oauthError) {
-      const messages: Record<string, string> = {
-        no_instagram_account: "No Instagram Business account found linked to your Facebook pages",
-        token_exchange_failed: "Failed to get the token. Please try again.",
-        invalid_state: "Security error in the OAuth flow. Please try again.",
-        missing_params: "Incomplete response from Meta. Please try again.",
-      };
-      setToast({ type: "error", message: messages[oauthError] ?? "An unexpected error occurred. Please try again." });
+    if (oauthResult.toast) {
       window.history.replaceState({}, "", "/dashboard/influencers");
     }
-  }, [searchParams, influencers]);
+  }, [oauthResult]);
 
   // Auto-dismiss toast after 5s
   useEffect(() => {
@@ -171,9 +207,9 @@ export default function InfluencersPage() {
       </div>
 
       {/* Create modal — onboarding wizard */}
-      {modal.type === "create" && token && (
+      {effectiveModal.type === "create" && token && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setModal({ type: "closed" })} />
+          <div className="absolute inset-0 bg-black/40" onClick={closeModal} />
           <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="px-6 pt-6 pb-2">
               <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">New influencer</h2>
@@ -182,7 +218,7 @@ export default function InfluencersPage() {
               <InfluencerOnboarding
                 token={token}
                 onDone={handleSaved}
-                onCancel={() => setModal({ type: "closed" })}
+                onCancel={closeModal}
               />
             </div>
           </div>
@@ -190,21 +226,21 @@ export default function InfluencersPage() {
       )}
 
       {/* Edit modal */}
-      {modal.type === "edit" && token && (
+      {effectiveModal.type === "edit" && token && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setModal({ type: "closed" })} />
+          <div className="absolute inset-0 bg-black/40" onClick={closeModal} />
           <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="px-6 pt-6 pb-2">
               <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                Edit · {modal.influencer.name}
+                Edit · {effectiveModal.influencer.name}
               </h2>
             </div>
             <div className="px-6 pb-6 pt-4">
               <InfluencerForm
-                influencer={modal.influencer}
+                influencer={effectiveModal.influencer}
                 token={token}
                 onSaved={handleSaved}
-                onCancel={() => setModal({ type: "closed" })}
+                onCancel={closeModal}
               />
             </div>
           </div>
@@ -212,22 +248,22 @@ export default function InfluencersPage() {
       )}
 
       {/* Social accounts modal */}
-      {modal.type === "accounts" && token && (
+      {effectiveModal.type === "accounts" && token && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setModal({ type: "closed" })} />
+          <div className="absolute inset-0 bg-black/40" onClick={closeModal} />
           <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-md">
             <div className="px-6 pt-6 pb-2 flex items-center justify-between">
               <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                {modal.influencer.name} — Social accounts
+                {effectiveModal.influencer.name} — Social accounts
               </h2>
-              <button onClick={() => setModal({ type: "closed" })} className="text-gray-400 hover:text-gray-600">
+              <button onClick={closeModal} className="text-gray-400 hover:text-gray-600">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
             <div className="px-6 pb-6 pt-4">
-              <SocialAccountsList influencerId={modal.influencer.id} token={token} />
+              <SocialAccountsList influencerId={effectiveModal.influencer.id} token={token} />
             </div>
           </div>
         </div>

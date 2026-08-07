@@ -106,7 +106,12 @@ export default function HistoryPage() {
   const [responses, setResponses] = useState<PendingResponse[]>([]);
   const [influencers, setInfluencers] = useState<Influencer[]>([]);
   const [filterInfluencer, setFilterInfluencer] = useState<string>("all");
-  const [loading, setLoading] = useState(true);
+
+  // Which filter the current `responses` belong to. Deriving `loading` from it
+  // shows the loader in the same render the filter changes, with no setState
+  // in the effect body.
+  const [loadedFor, setLoadedFor] = useState<string | null>(null);
+  const loading = loadedFor !== filterInfluencer;
   const [error, setError] = useState<string | null>(null);
 
   const fetchHistory = useCallback(async () => {
@@ -129,9 +134,19 @@ export default function HistoryPage() {
   }, [token]);
 
   useEffect(() => {
-    setLoading(true);
-    fetchHistory().finally(() => setLoading(false));
-  }, [fetchHistory]);
+    let cancelled = false;
+
+    async function load() {
+      await fetchHistory();
+      if (!cancelled) setLoadedFor(filterInfluencer);
+    }
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchHistory, filterInfluencer]);
 
   const influencerMap = Object.fromEntries(influencers.map((i) => [i.id, i.name]));
 
