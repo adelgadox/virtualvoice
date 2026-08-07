@@ -70,9 +70,10 @@ describe("InfluencerCard", () => {
 });
 
 /**
- * The avatar goes through next/image. Routing it via /_next/image is what keeps
- * it inside the page CSP: img-src lists 'self' but not Meta's CDNs, so a direct
- * <img> to scontent-*.cdninstagram.com would be blocked in production.
+ * The avatar goes through next/image with the Cloudinary loader. Two things
+ * ride on that: Vercel's optimizer is never invoked (nothing billed), and the
+ * image reaches the browser from res.cloudinary.com, which img-src allows —
+ * a direct <img> to scontent-*.cdninstagram.com would be blocked.
  */
 describe("InfluencerCard avatar", () => {
   const INSTAGRAM_URL =
@@ -93,24 +94,31 @@ describe("InfluencerCard avatar", () => {
     expect(renderWithAvatar()).toBeInTheDocument();
   });
 
-  it("serves the image from the same origin, not Meta's CDN", () => {
+  it("serves the image from Cloudinary, not Meta's CDN", () => {
     const src = renderWithAvatar().getAttribute("src") ?? "";
 
-    expect(src.startsWith("/_next/image")).toBe(true);
+    expect(src.startsWith("https://res.cloudinary.com/")).toBe(true);
     expect(src.startsWith("https://scontent")).toBe(false);
   });
 
-  it("passes the original URL through to the optimizer", () => {
+  it("never routes through Vercel's image optimizer", () => {
     const src = renderWithAvatar().getAttribute("src") ?? "";
 
+    expect(src).not.toContain("/_next/image");
+  });
+
+  it("passes the original URL through to Cloudinary fetch", () => {
+    const src = renderWithAvatar().getAttribute("src") ?? "";
+
+    expect(src).toContain("/image/fetch/");
     expect(decodeURIComponent(src)).toContain(INSTAGRAM_URL);
   });
 
   it("offers a 2x candidate for retina screens", () => {
     const srcset = renderWithAvatar().getAttribute("srcset") ?? "";
 
-    expect(srcset).toContain("w=40");
-    expect(srcset).toContain("w=80");
+    expect(srcset).toContain("w_40,h_40");
+    expect(srcset).toContain("w_80,h_80");
     expect(srcset).toContain("2x");
   });
 

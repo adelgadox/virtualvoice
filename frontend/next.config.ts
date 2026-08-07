@@ -4,17 +4,12 @@ const isDev = process.env.NODE_ENV === "development";
 
 const nextConfig: NextConfig = {
   images: {
-    // Instagram Business profile pictures come from the Meta Graph API and are
-    // served off Meta's CDNs. The exact subdomain varies per request
-    // (scontent-mad1-1, scontent-lhr8-2, …), hence the wildcards.
-    remotePatterns: [
-      { protocol: "https", hostname: "**.cdninstagram.com" },
-      { protocol: "https", hostname: "**.fbcdn.net" },
-      { protocol: "https", hostname: "graph.facebook.com" },
-    ],
-    // Meta signs these URLs with a short expiry. Holding the optimized copy for
-    // a day means the avatar survives the source URL going stale.
-    minimumCacheTTL: 86_400,
+    // Cloudinary does the optimizing, not Vercel. A custom loader bypasses
+    // /_next/image completely, so no image-optimization units are billed.
+    // remotePatterns is deliberately absent — it only governs Vercel's
+    // optimizer, which never runs here.
+    loader: "custom",
+    loaderFile: "./src/lib/cloudinary-loader.ts",
     // Avatars render at 40px CSS; 40/80/120 covers 1x/2x/3x with no waste.
     imageSizes: [40, 80, 120],
   },

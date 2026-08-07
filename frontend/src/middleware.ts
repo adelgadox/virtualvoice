@@ -18,7 +18,10 @@ function buildCsp(): string {
     // Nonce propagation requires layout-level integration not yet implemented.
     "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: https://lh3.googleusercontent.com https://graph.facebook.com",
+    // res.cloudinary.com serves every next/image request — see the custom
+    // loader in src/lib/cloudinary-loader.ts. Meta's CDNs are intentionally
+    // absent: avatars reach the browser through Cloudinary, never direct.
+    "img-src 'self' data: https://res.cloudinary.com https://lh3.googleusercontent.com https://graph.facebook.com",
     "font-src 'self' https://fonts.gstatic.com",
     `connect-src 'self' ${apiOrigin} https://accounts.google.com https://vitals.vercel-insights.com`,
     "frame-src 'none'",
