@@ -125,6 +125,60 @@ La consecuencia a tener presente: entre el redirect y el fin de la tarea hay una
 
 Si las variables de Cloudinary faltan, el sistema degrada solo: el avatar conserva la URL de Meta, el CSP la bloquea y se ve la inicial del influencer. Nada se rompe.
 
+## Hibernación en Railway
+
+El proyecto está **apagado desde el 2026-09-19** para no pagar compute mientras no se usa. Lo que se apagó fueron los *deployments*, no el proyecto: servicios, variables, dominios y volúmenes siguen existiendo tal cual.
+
+### Qué se hizo
+
+```bash
+railway down --service virtualvoice -y
+railway down --service Redis -y
+railway down --service Postgres -y
+```
+
+Antes de eso, un respaldo de Postgres y una foto del estado del proyecto, ambos **fuera del repo**, en `~/Backups/virtualvoice/`:
+
+```bash
+URL=$(railway variables --service Postgres --kv | grep '^DATABASE_PUBLIC_URL=' | cut -d= -f2-)
+pg_dump "$URL" -Fc -f ~/Backups/virtualvoice/pg-$(date +%Y%m%d-%H%M).dump
+railway status --json > ~/Backups/virtualvoice/railway-status-$(date +%Y%m%d-%H%M).json
+```
+
+El dump es un seguro, no el plan: los volúmenes no se tocan al bajar un deployment. Sirve si algún día se decide borrar el proyecto de verdad.
+
+### Qué se sigue pagando
+
+Solo el almacenamiento de los volúmenes, que quedan intactos:
+
+| Volumen | Servicio | Usado |
+|---------|----------|-------|
+| `postgres-volume` | Postgres | 217 MB |
+| `redis-volume` | Redis | 150 MB |
+
+Menos de 0.4 GB en total. El compute —que es lo que costaba— está en cero.
+
+### Cómo reactivarlo
+
+En orden, porque el backend no arranca sin base de datos:
+
+```bash
+railway redeploy --service Postgres --from-source -y
+railway redeploy --service Redis --from-source -y
+railway redeploy --service virtualvoice --from-source -y
+railway status
+curl -s -o /dev/null -w '%{http_code}\n' https://virtualvoice-backend.up.railway.app/health   # 200
+```
+
+`--from-source` vuelve a traer la imagen o el commit configurado en cada servicio; sin esa bandera se reusa el deployment anterior.
+
+### Lo que hay que revisar al volver
+
+- **El puerto del proxy TCP de Postgres puede cambiar.** `DATABASE_PUBLIC_URL` es la que se usa desde afuera (dumps, psql local); la interna `postgres.railway.internal:5432` no cambia, así que el backend no se entera.
+- **Las suscripciones de webhooks de Meta.** Mientras la API está caída, Meta recibe errores en `META_OAUTH_REDIRECT_URI` / el endpoint de webhook y después de suficientes fallos deja de mandar eventos. Hay que reverificar la suscripción en el panel de Meta antes de dar el backend por sano.
+- **El frontend en Vercel sigue vivo** y apuntando a una API caída: mientras dure la hibernación muestra errores de red, no una página de mantenimiento. Si la pausa va a ser larga, conviene pausar también el proyecto de Vercel.
+- **Migraciones pendientes.** Si entre medio se mergeó algo a `main`, el redeploy trae ese código: correr `alembic upgrade head` como siempre.
+
 ## Cuando algo falla
 
 | Síntoma | Primer lugar donde mirar |

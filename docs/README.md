@@ -4,7 +4,7 @@
 |-----------|----------|
 | [Arquitectura](architecture.md) | Cómo está armado el sistema: flujo de un comentario, capas del backend, motor de personalidad, RAG |
 | [Seguridad](security.md) | Modelo de amenazas, autenticación, cifrado de tokens, rate limiting, cabeceras, CSP |
-| [Operación](operations.md) | Deploy, variables de entorno, migraciones, scripts y runbooks |
+| [Operación](operations.md) | Deploy, variables de entorno, migraciones, scripts, runbooks y la [hibernación en Railway](operations.md#hibernación-en-railway) |
 | [Testing](testing.md) | Qué cubre cada suite, cómo correrlas, convenciones |
 | [Roadmap](roadmap/README.md) | 14 fases con su estado y tareas |
 
